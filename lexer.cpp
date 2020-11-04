@@ -39,8 +39,8 @@ Lexer::Lexer(const char* char_stream)
   keywords.insert(String("func"),     Token::Type::FUNC);
   keywords.insert(String("global"),   Token::Type::GLOBAL);
   keywords.insert(String("if"),       Token::Type::IF);
-  keywords.insert(String("in"),       Token::Type::IN);
   keywords.insert(String("include"),  Token::Type::INCLUDE);
+  keywords.insert(String("inside"),   Token::Type::INSIDE);
   keywords.insert(String("log2"),     Token::Type::LOG2);
   keywords.insert(String("mut"),      Token::Type::MUT);
   keywords.insert(String("return"),   Token::Type::RETURN);

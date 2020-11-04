@@ -139,10 +139,10 @@ String to_string(Token::Type type)
     return "GLOBAL";
   case Token::Type::IF:
     return "IF";
-  case Token::Type::IN:
-    return "IN";
   case Token::Type::INCLUDE:
     return "INCLUDE";
+  case Token::Type::INSIDE:
+    return "INLINE";
   case Token::Type::LOG2:
     return "LOG2";
   case Token::Type::VAR:

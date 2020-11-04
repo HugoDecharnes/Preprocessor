@@ -377,7 +377,7 @@ Statement* Parser::iteration()
   try {
     consume(Token::Type::LEFT_PAREN);
     storage = lhs_storage();
-    consume(Token::Type::IN);
+    consume(Token::Type::COLON);
     expression = ternary();
     consume(Token::Type::RIGHT_PAREN);
     consume(Token::Type::NEWLINE);
@@ -568,7 +568,7 @@ Expression* Parser::relational()
       Expression* right_expr = shift();
       return new Loose_infer(token, expression, right_expr);
     }
-    case Token::Type::IN: {
+    case Token::Type::INSIDE: {
       Token token = advance();
       Expression* right_expr = shift();
       return new Inside(token, expression, right_expr);
