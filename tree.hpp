@@ -415,9 +415,8 @@ public:
 
 class Variable_def : public Directive {
 public:
-  Variable_def(const Token& token, bool globl, Storage* storage, Expression* expression);
+  Variable_def(const Token& token, Storage* storage, Expression* expression);
   ~Variable_def();
-  const bool globl;
   Storage* const storage;
   Expression* const expression;
   void evaluate(Visitor* visitor) override;
@@ -434,9 +433,8 @@ public:
 
 class Function_def : public Directive {
 public:
-  Function_def(const Token& token, bool globl, Storage* storage, Function* function);
+  Function_def(const Token& token, Storage* storage, Function* function);
   ~Function_def();
-  const bool globl;
   Storage* const storage;
   Function* const function;
   void evaluate(Visitor* visitor) override;

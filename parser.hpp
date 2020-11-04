@@ -43,8 +43,7 @@ public:
 private:
   Statement* compound();
   Statement* block();
-  Statement* var_define();
-  Statement* func_define();
+  Statement* definition();
   Statement* func_return();
   Statement* inclusion();
   Statement* mutate();
@@ -53,6 +52,9 @@ private:
   Statement* selection();
   Statement* iteration();
 
+  Function* function_def();
+
+  Expression* variable_def();
   Expression* ternary();
   Expression* logical_or();
   Expression* logical_and();

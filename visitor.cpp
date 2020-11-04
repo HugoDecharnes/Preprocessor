@@ -86,7 +86,7 @@ void Visitor::variable_def(Variable_def* node)
     if (node->expression != nullptr) {
       value = node->expression->evaluate(this);
     }
-    if (node->globl) {
+    if (node->token.type == Token::Type::GLOBAL) {
       node->storage->global_define(this, value);
     }
     else {
@@ -102,7 +102,7 @@ void Visitor::function_def(Function_def* node)
 {
   try {
     Variant value = node->function;
-    if (node->globl) {
+    if (node->token.type == Token::Type::GLOBAL) {
       node->storage->global_define(this, value);
     }
     else {

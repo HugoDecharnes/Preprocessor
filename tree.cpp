@@ -85,13 +85,13 @@ Expr_stmt::Expr_stmt(const Token& token, Expression* expression)
 {
 }
 
-Variable_def::Variable_def(const Token& token, bool globl, Storage* storage, Expression* expression)
-  : Directive(token), globl(globl), storage(storage), expression(expression)
+Variable_def::Variable_def(const Token& token, Storage* storage, Expression* expression)
+  : Directive(token), storage(storage), expression(expression)
 {
 }
 
-Function_def::Function_def(const Token& token, bool globl, Storage* storage, Function* function)
-  : Directive(token), globl(globl), storage(storage), function(function)
+Function_def::Function_def(const Token& token, Storage* storage, Function* function)
+  : Directive(token), storage(storage), function(function)
 {
 }
 

@@ -44,7 +44,7 @@ public:
   void report(const Semantic_error& error) const;
 
 private:
-  List<List<Map<Variant>>> locals;
+  List<Map<Variant>> locals;
   Map<Variant> globals;
 
   const String* curr_file;

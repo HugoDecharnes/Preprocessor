@@ -19,7 +19,7 @@
 Environment::Environment(const String& file_name)
   : curr_file(&file_name)
 {
-  locals.push_front(List<Map<Variant>>());
+  locals.push_front(Map<Variant>());
   push_block_scope();
 }
 
@@ -34,12 +34,12 @@ void Environment::put_global(const String& key, const Variant& value)
 
 void Environment::put_local(const String& key, const Variant& value)
 {
-  locals.front().front().insert(key, value);
+  locals.front().insert(key, value);
 }
 
 Variant& Environment::get(const String& key)
 {
-  for (Map<Variant>& scope : locals.front()) {
+  for (Map<Variant>& scope : locals) {
     Variant* result = scope.find(key);
     if (result != nullptr) {
       return *result;
@@ -50,12 +50,11 @@ Variant& Environment::get(const String& key)
 
 void Environment::push_block_scope()
 {
-  locals.front().push_front(Map<Variant>());
+  locals.push_front(Map<Variant>());
 }
 
 void Environment::push_func_scope(const String& file_name, const Token& token)
 {
-  locals.push_front(List<Map<Variant>>());
   push_block_scope();
   call_stack.push_front(std::pair<const String&, const Token&>(*curr_file, token));
   curr_file = &file_name;
@@ -69,12 +68,12 @@ void Environment::push_incl_scope(const String& file_name, const Token& token)
 
 void Environment::pop_block_scope()
 {
-  locals.front().pop_front();
+  locals.pop_front();
 }
 
 void Environment::pop_func_scope()
 {
-  locals.pop_front();
+  pop_block_scope();
   curr_file = &call_stack.front().first;
   call_stack.pop_front();
 }

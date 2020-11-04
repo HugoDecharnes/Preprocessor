@@ -69,11 +69,6 @@ Statement* Parser::compound()
         stmt_list->push_back(statement);
         continue;
       }
-      case Token::Type::FUNC: {
-        Statement* statement = func_define();
-        stmt_list->push_back(statement);
-        continue;
-      }
       case Token::Type::IF: {
         Statement* statement = selection();
         stmt_list->push_back(statement);
@@ -89,22 +84,23 @@ Statement* Parser::compound()
         stmt_list->push_back(statement);
         continue;
       }
-      case Token::Type::VAR: {
-        Statement* statement = var_define();
-        stmt_list->push_back(statement);
-        continue;
-      }
       case Token::Type::RETURN: {
         Statement* statement = func_return();
         stmt_list->push_back(statement);
         continue;
       }
+      case Token::Type::GLOBAL:
+      case Token::Type::LOCAL: {
+        Statement* statement = definition();
+        stmt_list->push_back(statement);
+        continue;
+      }
       case Token::Type::ELSE:
       case Token::Type::ELSEIF:
+      case Token::Type::END:
       case Token::Type::ENDBLOCK:
       case Token::Type::ENDIF:
       case Token::Type::ENDFOR:
-      case Token::Type::ENDFUNC:
         if (stmt_list->size == 1) {
           Statement* statement = stmt_list->front();
           delete stmt_list;
@@ -161,42 +157,49 @@ Statement* Parser::block()
   return new Block(token, statement);
 }
 
-Statement* Parser::var_define()
+Statement* Parser::definition()
 {
   Token token = advance();
-  bool globl = false;
-  if (match(Token::Type::GLOBAL)) {
-    globl = true;
-  }
   Storage* storage = nullptr;
-  Expression* expression = nullptr;
   try {
     storage = lhs_storage();
-    if (match(Token::Type::EQUAL)) {
-      expression = ternary();
+    if (match(Token::Type::LEFT_PAREN)) {
+      Function* function = function_def();
+      return new Function_def(token, storage, function);
     }
-    consume(Token::Type::NEWLINE);
+    else {
+      Expression* expression = variable_def();
+      return new Variable_def(token, storage, expression);
+    }
   }
   catch (const Syntactic_error& error) {
+    delete storage;
     report(error);
     synchronize();
+    return nullptr;
   }
-  return new Variable_def(token, globl, storage, expression);
 }
 
-Statement* Parser::func_define()
+Expression* Parser::variable_def()
 {
-  Token token = advance();
-  bool globl = false;
-  if (match(Token::Type::GLOBAL)) {
-    globl = true;
-  }
-  Storage* storage = nullptr;
-  List<Identifier*>* parameters = nullptr;
+  Expression* expression = nullptr;
   try {
-    storage = lhs_storage();
-    parameters = new List<Identifier*>();
-    consume(Token::Type::LEFT_PAREN);
+    consume(Token::Type::EQUAL);
+    expression = ternary();
+    consume(Token::Type::NEWLINE);
+    return expression;
+  }
+  catch (const Syntactic_error& error) {
+    delete expression;
+    throw error;
+  }
+}
+
+Function* Parser::function_def()
+{
+  List<Identifier*>* parameters = new List<Identifier*>();
+  Statement* statement = nullptr;
+  try {
     if (!match(Token::Type::RIGHT_PAREN)) {
       do {
         Token token = consume(Token::Type::IDENTIFIER);
@@ -205,23 +208,33 @@ Statement* Parser::func_define()
       } while (match(Token::Type::COMMA));
       consume(Token::Type::RIGHT_PAREN);
     }
-    consume(Token::Type::NEWLINE);
+    switch (curr_token.type) {
+    case Token::Type::EQUAL: {
+      Token token = advance();
+      Expression* expression = ternary();
+      statement = new Func_return(token, expression);
+      consume(Token::Type::NEWLINE);
+      break;
+    }
+    case Token::Type::BEGIN: {
+      advance();
+      consume(Token::Type::NEWLINE);
+      statement = compound();
+      consume(Token::Type::END);
+      consume(Token::Type::NEWLINE);
+      break;
+    }
+    default:
+      String message = "expecting '=' or 'begin'; found " + to_string(curr_token.type);
+      throw Syntactic_error(curr_token, message);
+    }
+    return new Function(file_name, parameters, statement);
   }
   catch (const Syntactic_error& error) {
-    report(error);
-    synchronize();
+    delete parameters;
+    delete statement;
+    throw error;
   }
-  Statement* statement = compound();
-  try {
-    consume(Token::Type::ENDFUNC);
-    consume(Token::Type::NEWLINE);
-  }
-  catch (const Syntactic_error& error) {
-    report(error);
-    synchronize();
-  }
-  Function* function = new Function(file_name, parameters, statement);
-  return new Function_def(token, globl, storage, function);
 }
 
 Statement* Parser::func_return()

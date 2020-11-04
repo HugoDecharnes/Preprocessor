@@ -115,26 +115,26 @@ String to_string(Token::Type type)
     return "PLAIN_TEXT";
   case Token::Type::IDENTIFIER:
     return "IDENTIFIER";
+  case Token::Type::BEGIN:
+    return "BEGIN";
   case Token::Type::BLOCK:
     return "BLOCK";
   case Token::Type::ELSE:
     return "ELSE";
   case Token::Type::ELSEIF:
     return "ELSEIF";
+  case Token::Type::END:
+    return "END";
   case Token::Type::ENDBLOCK:
     return "ENDBLOCK";
   case Token::Type::ENDIF:
     return "ENDIF";
   case Token::Type::ENDFOR:
     return "ENDFOR";
-  case Token::Type::ENDFUNC:
-    return "ENDFUNC";
   case Token::Type::FALSE:
     return "FALSE";
   case Token::Type::FOR:
     return "FOR";
-  case Token::Type::FUNC:
-    return "FUNC";
   case Token::Type::GLOBAL:
     return "GLOBAL";
   case Token::Type::IF:
@@ -143,10 +143,10 @@ String to_string(Token::Type type)
     return "INCLUDE";
   case Token::Type::INSIDE:
     return "INLINE";
+  case Token::Type::LOCAL:
+    return "LOCAL";
   case Token::Type::LOG2:
     return "LOG2";
-  case Token::Type::VAR:
-    return "VAR";
   case Token::Type::MUT:
     return "MUT";
   case Token::Type::RETURN:

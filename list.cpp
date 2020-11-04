@@ -254,5 +254,4 @@ template class List<Variant>;
 
 template class List<Map<Variant>>;
 
-template class List<List<Map<Variant>>>;
 template class List<std::pair<const String&, const Token&>>;
