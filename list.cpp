@@ -140,11 +140,18 @@ T& List<T>::back() const
 }
 
 template<class T>
-T& List<T>::at(unsigned int rhs) const
+T& List<T>::at(int rhs) const
 {
-  if (rhs < size) {
+  if (0 <= rhs && rhs < size) {
     List<T>::Node* node = head;
     for (unsigned int i = 0; i < rhs; i++) {
+      node = node->next;
+    }
+    return node->data;
+  }
+  else if (0 > rhs && rhs >= -size) {
+    List<T>::Node* node = head;
+    for (unsigned int i = 0; i < size + rhs; i++) {
       node = node->next;
     }
     return node->data;

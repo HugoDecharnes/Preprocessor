@@ -77,7 +77,7 @@ public:
 
   T& front() const;
   T& back() const;
-  T& at(unsigned int rhs) const;
+  T& at(int rhs) const;
 
   List<T>::Iterator begin() const;
   List<T>::Iterator end() const;
