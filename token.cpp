@@ -151,6 +151,8 @@ String to_string(Token::Type type)
     return "MUT";
   case Token::Type::RETURN:
     return "RETURN";
+  case Token::Type::SIZE:
+    return "SIZE";
   case Token::Type::TRUE:
     return "TRUE";
   case Token::Type::LEFT_BRACK:

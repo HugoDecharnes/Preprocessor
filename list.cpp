@@ -128,6 +128,12 @@ bool List<T>::empty() const
 }
 
 template<class T>
+unsigned int List<T>::get_size() const
+{
+  return size;
+}
+
+template<class T>
 T& List<T>::front() const
 {
   return head->data;
@@ -144,14 +150,30 @@ T& List<T>::at(int rhs) const
 {
   if (0 <= rhs && rhs < size) {
     List<T>::Node* node = head;
-    for (unsigned int i = 0; i < rhs; i++) {
+    for (int i = 0; i < rhs; i++) {
       node = node->next;
     }
     return node->data;
   }
   else if (0 > rhs && rhs >= -size) {
     List<T>::Node* node = head;
-    for (unsigned int i = 0; i < size + rhs; i++) {
+    for (int i = 0; i < size + rhs; i++) {
+      node = node->next;
+    }
+    return node->data;
+  }
+  else {
+    String message = "list index '" + to_string(rhs) + "' is out of range";
+    throw Out_of_range(message);
+  }
+}
+
+template<class T>
+T& List<T>::at(unsigned int rhs) const
+{
+  if (rhs < size) {
+    List<T>::Node* node = head;
+    for (unsigned int i = 0; i < rhs; i++) {
       node = node->next;
     }
     return node->data;

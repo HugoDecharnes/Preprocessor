@@ -41,6 +41,7 @@ private:
   };
 
   Map<Token::Type> keywords;
+  Map<Token::Type> builtins;
 
   const char* start_char;
   const char* curr_char;

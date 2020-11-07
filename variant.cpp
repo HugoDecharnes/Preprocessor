@@ -31,6 +31,12 @@ Variant::Variant(int rhs)
   data.INTEGER = rhs;
 }
 
+Variant::Variant(unsigned int rhs)
+{
+  type = Variant::Type::INTEGER;
+  data.INTEGER = (int)rhs;
+}
+
 Variant::Variant(bool rhs)
 {
   type = Variant::Type::BOOLEAN;
@@ -119,6 +125,14 @@ Variant& Variant::operator=(int rhs)
   return *this;
 }
 
+Variant& Variant::operator=(unsigned int rhs)
+{
+  this->~Variant();
+  type = Variant::Type::INTEGER;
+  data.INTEGER = (int)rhs;
+  return *this;
+}
+
 Variant& Variant::operator=(bool rhs)
 {
   this->~Variant();
@@ -196,6 +210,18 @@ Variant& Variant::operator+=(int rhs)
 {
   if (type == Variant::Type::INTEGER) {
     data.INTEGER += rhs;
+    return *this;
+  }
+  else {
+    String message = "unexpected " + to_string(type) + " on '+=' left-hand side; expecting integer";
+    throw Bad_variant(message);
+  }
+}
+
+Variant& Variant::operator+=(unsigned int rhs)
+{
+  if (type == Variant::Type::INTEGER) {
+    data.INTEGER += (int)rhs;
     return *this;
   }
   else {
@@ -308,6 +334,17 @@ Variant& Variant::operator+=(const Variant& rhs)
 }
 
 Variant& Variant::operator[](int rhs) const
+{
+  if (type == Variant::Type::ARRAY) {
+    return data.ARRAY->at(rhs);
+  }
+  else {
+    String message = "unexpected " + to_string(type) + " on '[]' left-hand side; expecting list or dictionary";
+    throw Bad_variant(message);
+  }
+}
+
+Variant& Variant::operator[](unsigned int rhs) const
 {
   if (type == Variant::Type::ARRAY) {
     return data.ARRAY->at(rhs);

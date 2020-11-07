@@ -258,10 +258,16 @@ Interpolate::Interpolate(const Token& token, Expression* expression)
 {
 }
 
-Logarithm::Logarithm(const Token& token, Expression* expression)
+Log2_bif::Log2_bif(const Token& token, Expression* expression)
   : Unary_expr(token, expression)
 {
 }
+
+Size_bif::Size_bif(const Token& token, Expression* expression)
+  : Unary_expr(token, expression)
+{
+}
+
 
 Integer::Integer(const Token& token)
   : Primary_expr(token)
@@ -552,7 +558,11 @@ Interpolate::~Interpolate()
 {
 }
 
-Logarithm::~Logarithm()
+Log2_bif::~Log2_bif()
+{
+}
+
+Size_bif::~Size_bif()
 {
 }
 
@@ -820,9 +830,14 @@ Variant Interpolate::evaluate(Visitor* visitor)
   return visitor->interpolate(this);
 }
 
-Variant Logarithm::evaluate(Visitor* visitor)
+Variant Log2_bif::evaluate(Visitor* visitor)
 {
-  return visitor->logarithm(this);
+  return visitor->log2_bif(this);
+}
+
+Variant Size_bif::evaluate(Visitor* visitor)
+{
+  return visitor->size_bif(this);
 }
 
 Variant Integer::evaluate(Visitor* visitor)

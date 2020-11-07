@@ -35,17 +35,19 @@ Lexer::Lexer(const char* char_stream)
   keywords.insert(String("endblock"), Token::Type::ENDBLOCK);
   keywords.insert(String("endfor"),   Token::Type::ENDFOR);
   keywords.insert(String("endif"),    Token::Type::ENDIF);
-  keywords.insert(String("false"),    Token::Type::FALSE);
   keywords.insert(String("for"),      Token::Type::FOR);
   keywords.insert(String("global"),   Token::Type::GLOBAL);
   keywords.insert(String("if"),       Token::Type::IF);
   keywords.insert(String("include"),  Token::Type::INCLUDE);
-  keywords.insert(String("inside"),   Token::Type::INSIDE);
   keywords.insert(String("local"),    Token::Type::LOCAL);
-  keywords.insert(String("log2"),     Token::Type::LOG2);
   keywords.insert(String("mut"),      Token::Type::MUT);
   keywords.insert(String("return"),   Token::Type::RETURN);
-  keywords.insert(String("true"),     Token::Type::TRUE);
+
+  builtins.insert(String("false"),  Token::Type::FALSE);
+  builtins.insert(String("inside"), Token::Type::INSIDE);
+  builtins.insert(String("log2"),   Token::Type::LOG2);
+  builtins.insert(String("size"),   Token::Type::SIZE);
+  builtins.insert(String("true"),   Token::Type::TRUE);
 
   curr_char = char_stream;
   curr_line = 1;
@@ -257,6 +259,10 @@ Token Lexer::preprocessor()
       Token::Type* type = keywords.find(string);
       if (type != nullptr) {
         is_inline = false;
+        return emit(*type);
+      }
+      type = builtins.find(string);
+      if (type != nullptr) {
         return emit(*type);
       }
       if (nesting_level == 0 && is_inline && *curr_char != '(') {

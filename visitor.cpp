@@ -500,11 +500,22 @@ Variant Visitor::interpolate(Interpolate* node)
   }
 }
 
-Variant Visitor::logarithm(Logarithm* node)
+Variant Visitor::log2_bif(Log2_bif* node)
 {
   try {
     Variant value = node->expression->evaluate(this);
     return value.log2();
+  }
+  catch (const Bad_variant& error) {
+    throw Semantic_error(node->token, error.message);
+  }
+}
+
+Variant Visitor::size_bif(Size_bif* node)
+{
+  try {
+    Variant value = node->expression->evaluate(this);
+    return value.get_array().get_size();
   }
   catch (const Bad_variant& error) {
     throw Semantic_error(node->token, error.message);
@@ -629,7 +640,7 @@ Variant Visitor::function_call(Function_call* node)
   try {
     Variant base = node->left_expr->evaluate(this);
     const Function& function = base.get_function();
-    if (node->expr_list->size == function.parameters->size) {
+    if (node->expr_list->get_size() == function.parameters->get_size()) {
       List<std::pair<Identifier*, Variant>> param_value_list;
       List<Identifier*>::Iterator param_iter = function.parameters->begin();
       List<Expression*>::Iterator expr_iter = node->expr_list->begin();
@@ -652,8 +663,8 @@ Variant Visitor::function_call(Function_call* node)
       return result;
     }
     else {
-      String message = "mismatched function parameters; expecting " + to_string(function.parameters->size) + " got "
-        + to_string(node->expr_list->size);
+      String message = "mismatched function parameters; expecting " + to_string(function.parameters->get_size()) + " got "
+        + to_string(node->expr_list->get_size());
       throw Semantic_error(node->token, message);
     }
   }

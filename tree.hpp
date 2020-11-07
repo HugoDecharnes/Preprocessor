@@ -273,10 +273,17 @@ public:
   Variant evaluate(Visitor* visitor) override;
 };
 
-class Logarithm : public Unary_expr {
+class Log2_bif : public Unary_expr {
 public:
-  Logarithm(const Token& token, Expression* expression);
-  ~Logarithm();
+  Log2_bif(const Token& token, Expression* expression);
+  ~Log2_bif();
+  Variant evaluate(Visitor* visitor) override;
+};
+
+class Size_bif : public Unary_expr {
+public:
+  Size_bif(const Token& token, Expression* expression);
+  ~Size_bif();
   Variant evaluate(Visitor* visitor) override;
 };
 

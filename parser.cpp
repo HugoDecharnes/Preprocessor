@@ -101,7 +101,7 @@ Statement* Parser::compound()
       case Token::Type::ENDBLOCK:
       case Token::Type::ENDIF:
       case Token::Type::ENDFOR:
-        if (stmt_list->size == 1) {
+        if (stmt_list->get_size() == 1) {
           Statement* statement = stmt_list->front();
           delete stmt_list;
           return statement;
@@ -122,7 +122,7 @@ Statement* Parser::compound()
         continue;
       }
       else {
-        if (stmt_list->size == 1) {
+        if (stmt_list->get_size() == 1) {
           Statement* statement = stmt_list->front();
           delete stmt_list;
           return statement;
@@ -811,7 +811,9 @@ Expression* Parser::rhs_primary()
   case Token::Type::LEFT_CURLY:
     return dictionary();
   case Token::Type::LOG2:
-    return logarithm();
+    return log2_bif();
+  case Token::Type::SIZE:
+    return size_bif();
   case Token::Type::INTEGER: {
     Token token = advance();
     return new Integer(token);
@@ -941,7 +943,7 @@ Expression* Parser::dictionary()
   }
 }
 
-Expression* Parser::logarithm()
+Expression* Parser::log2_bif()
 {
   Expression* expression = nullptr;
   try {
@@ -949,7 +951,23 @@ Expression* Parser::logarithm()
     consume(Token::Type::LEFT_PAREN);
     expression = ternary();
     consume(Token::Type::RIGHT_PAREN);
-    return new Logarithm(token, expression);
+    return new Log2_bif(token, expression);
+  }
+  catch (const Syntactic_error& error) {
+    delete expression;
+    throw error;
+  }
+}
+
+Expression* Parser::size_bif()
+{
+  Expression* expression = nullptr;
+  try {
+    Token token = advance();
+    consume(Token::Type::LEFT_PAREN);
+    expression = ternary();
+    consume(Token::Type::RIGHT_PAREN);
+    return new Size_bif(token, expression);
   }
   catch (const Syntactic_error& error) {
     delete expression;

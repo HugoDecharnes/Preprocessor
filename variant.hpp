@@ -57,6 +57,7 @@ private:
 public:
   Variant();
   Variant(int rhs);
+  Variant(unsigned int rhs);
   Variant(bool rhs);
   Variant(const String& rhs);
   Variant(const List<Variant>& rhs);
@@ -66,6 +67,7 @@ public:
   ~Variant();
 
   Variant& operator=(int rhs);
+  Variant& operator=(unsigned int rhs);
   Variant& operator=(bool rhs);
   Variant& operator=(const String& rhs);
   Variant& operator=(const List<Variant>& rhs);
@@ -74,6 +76,7 @@ public:
   Variant& operator=(const Variant& rhs);
 
   Variant& operator+=(int rhs);
+  Variant& operator+=(unsigned int rhs);
   Variant& operator+=(bool rhs);
   Variant& operator+=(const String& rhs);
   Variant& operator+=(const List<Variant>& rhs);
@@ -81,6 +84,7 @@ public:
   Variant& operator+=(const Variant& rhs);
 
   Variant& operator[](int rhs) const;
+  Variant& operator[](unsigned int rhs) const;
   Variant& operator[](const String& rhs) const;
   Variant& operator[](const Variant& rhs) const;
 

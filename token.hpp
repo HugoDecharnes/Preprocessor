@@ -74,6 +74,7 @@ public:
     LOG2,
     MUT,
     RETURN,
+    SIZE,
     TRUE,
     LEFT_BRACK,
     ESCAPE_SEQ,

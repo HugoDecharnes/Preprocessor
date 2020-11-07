@@ -70,7 +70,9 @@ private:
   Expression* quotation();
   Expression* array();
   Expression* dictionary();
-  Expression* logarithm();
+
+  Expression* log2_bif();
+  Expression* size_bif();
 
   Expression* rhs_prefix();
   Expression* rhs_postfix();

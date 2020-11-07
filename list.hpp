@@ -37,6 +37,7 @@ private:
 
   List<T>::Node* head;
   List<T>::Node* tail;
+  unsigned int size;
 
 public:
   class Iterator {
@@ -61,8 +62,6 @@ public:
   List(const List<T>& rhs);
   ~List();
 
-  unsigned int size;
-
   List<T>& operator=(const List<T>& rhs);
   List<T>& operator+=(const List<T>& rhs);
   
@@ -75,9 +74,12 @@ public:
 
   bool empty() const;
 
+  unsigned int get_size() const;
+
   T& front() const;
   T& back() const;
   T& at(int rhs) const;
+  T& at(unsigned int rhs) const;
 
   List<T>::Iterator begin() const;
   List<T>::Iterator end() const;

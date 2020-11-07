@@ -93,7 +93,8 @@ public:
   Variant bitwise_not(Bitwise_not* node);
   Variant logical_not(Logical_not* node);
   Variant interpolate(Interpolate* node);
-  Variant logarithm(Logarithm* node);
+  Variant log2_bif(Log2_bif* node);
+  Variant size_bif(Size_bif* node);
   Variant integer(Integer* node);
   Variant true_const(True_const* node);
   Variant false_const(False_const* node);
