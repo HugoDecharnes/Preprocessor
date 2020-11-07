@@ -115,8 +115,8 @@ Selection::Selection(const Token& token, List<std::pair<Expression*, Statement*>
 {
 }
 
-Iteration::Iteration(const Token& token, Storage* storage, Expression* expression, Statement* statement)
-  : Directive(token), storage(storage), expression(expression), statement(statement)
+Iteration::Iteration(const Token& token, Storage* key_storage, Storage* val_storage, Expression* expression, Statement* statement)
+  : Directive(token), key_storage(key_storage), val_storage(val_storage), expression(expression), statement(statement)
 {
 }
 
@@ -439,7 +439,8 @@ Selection::~Selection()
 
 Iteration::~Iteration()
 {
-  delete storage;
+  delete key_storage;
+  delete val_storage;
   delete expression;
   delete statement;
 }

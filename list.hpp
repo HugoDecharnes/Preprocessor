@@ -54,7 +54,10 @@ public:
     bool operator==(const List<T>::Iterator& rhs) const;
     bool operator!=(const List<T>::Iterator& rhs) const;
 
+    unsigned int get_index() const;
+
   private:
+    unsigned int index;
     List<T>::Node* node;
   };
 

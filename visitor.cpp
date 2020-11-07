@@ -164,9 +164,14 @@ void Visitor::iteration(Iteration* node)
 {
   try {
     Variant value_list = node->expression->evaluate(this);
-    for (const Variant& value : value_list.get_array()) {
+    const List<Variant>& array = value_list.get_array();
+    for (List<Variant>::Iterator iterator = array.begin(); iterator != array.end(); iterator++) {
       environment.push_block_scope();
-      node->storage->local_define(this, value);
+      node->val_storage->local_define(this, *iterator);
+      if (node->key_storage != nullptr) {
+        Variant index(iterator.get_index());
+        node->key_storage->local_define(this, index);
+      }
       node->statement->evaluate(this);
       environment.pop_block_scope();
     }

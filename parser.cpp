@@ -385,11 +385,17 @@ Statement* Parser::selection()
 Statement* Parser::iteration()
 {
   Token token = advance();
-  Storage* storage = nullptr;
+  Storage* key_storage = nullptr;
+  Storage* val_storage = nullptr;
   Expression* expression = nullptr;
   try {
     consume(Token::Type::LEFT_PAREN);
-    storage = lhs_storage();
+    val_storage = lhs_storage();
+    if (match(Token::Type::COMMA)) {
+      key_storage = val_storage;
+      val_storage = nullptr;
+      val_storage = lhs_storage();
+    }
     consume(Token::Type::COLON);
     expression = ternary();
     consume(Token::Type::RIGHT_PAREN);
@@ -408,7 +414,7 @@ Statement* Parser::iteration()
     report(error);
     synchronize();
   }
-  return new Iteration(token, storage, expression, statement);
+  return new Iteration(token, key_storage, val_storage, expression, statement);
 }
 
 /////////////////////////////////////////////////// RIGHT-HAND SIDE EXPRESSIONS ////////////////////////////////////////////////////

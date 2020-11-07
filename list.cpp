@@ -213,13 +213,13 @@ List<T>::Node::~Node()
 
 template<class T>
 List<T>::Iterator::Iterator()
-  : node(nullptr)
+  : node(nullptr), index(0)
 {
 }
 
 template<class T>
 List<T>::Iterator::Iterator(List<T>::Node* node)
-  : node(node)
+  : node(node), index(0)
 {
 }
 
@@ -239,6 +239,7 @@ template<class T>
 typename List<T>::Iterator& List<T>::Iterator::operator++()
 {
   node = node->next;
+  index++;
   return *this;
 }
 
@@ -247,6 +248,7 @@ typename List<T>::Iterator List<T>::Iterator::operator++(int)
 {
   List<T>::Iterator iter = *this;
   ++*this;
+  ++index;
   return iter;
 }
 
@@ -260,6 +262,12 @@ template<class T>
 bool List<T>::Iterator::operator!=(const List<T>::Iterator& rhs) const
 {
   return node != rhs.node;
+}
+
+template<class T>
+unsigned int List<T>::Iterator::get_index() const
+{
+  return index;
 }
 
 //////////////////////////////////////////////////////////// INSTANCES /////////////////////////////////////////////////////////////
