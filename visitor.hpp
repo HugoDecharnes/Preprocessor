@@ -58,8 +58,9 @@ public:
   void block(Block* node);
   void plain_text(Plain_text* node);
   void expr_stmt(Expr_stmt* node);
-  void variable_def(Variable_def* node);
-  void function_def(Function_def* node);
+  void local_var_def(Local_var_def* node);
+  void global_var_def(Global_var_def* node);
+  void macro_def(Macro_def* node);
   void func_return(Func_return* node);
   void mutate(Mutate* node);
   void accumulation(Accumulation* node);
@@ -103,7 +104,7 @@ public:
   Variant quotation(Quotation* node);
   Variant array(Array* node);
   Variant dictionary(Dictionary* node);
-  Variant function_call(Function_call* node);
+  Variant macro_call(Macro_call* node);
   Variant eval_subscript(Subscript* node);
   Variant eval_identifier(Identifier* node);
   Variant eval_indirection(Indirection* node);

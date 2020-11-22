@@ -48,134 +48,136 @@ String to_string(Token::Type type)
 {
   switch (type) {
   case Token::Type::END_OF_FILE:
-    return "END_OF_FILE";
+    return "end of file";
   case Token::Type::NEWLINE:
-    return "NEWLINE";
+    return "'\\n'";
   case Token::Type::BANG:
-    return "BANG";
+    return "'!'";
   case Token::Type::BANG_EQUAL:
-    return "BANG_EQUAL";
+    return "'!='";
   case Token::Type::DOUBLE_QUOTE:
-    return "DOUBLE_QUOTE";
+    return "'\"'";
   case Token::Type::DOLLAR_SIGN:
-    return "DOLLAR_SIGN";
+    return "'$'";
   case Token::Type::PERCENT:
-    return "PERCENT";
+    return "'%'";
   case Token::Type::AMPERS:
-    return "AMPERS";
+    return "'&'";
   case Token::Type::AMPERS_AMPERS:
-    return "AMPERS_AMPERS";
+    return "'&&'";
   case Token::Type::LEFT_PAREN:
-    return "LEFT_PAREN";
+    return "'('";
   case Token::Type::RIGHT_PAREN:
-    return "RIGHT_PAREN";
+    return "')'";
   case Token::Type::STAR:
-    return "STAR";
+    return "'*'";
   case Token::Type::STAR_STAR:
-    return "STAR_STAR";
+    return "'**'";
   case Token::Type::PLUS:
-    return "PLUS";
+    return "'+'";
   case Token::Type::PLUS_EQUAL:
-    return "PLUS_EQUAL";
+    return "'+='";
   case Token::Type::COMMA:
-    return "COMMA";
+    return "','";
   case Token::Type::MINUS:
-    return "MINUS";
+    return "'-'";
   case Token::Type::DOT:
-    return "DOT";
+    return "'.'";
   case Token::Type::DOT_DOT:
-    return "DOT_DOT";
+    return "'..'";
   case Token::Type::SLASH:
-    return "SLASH";
+    return "'/'";
   case Token::Type::INTEGER:
-    return "INTEGER";
+    return "integer";
   case Token::Type::COLON:
-    return "COLON";
+    return "':'";
   case Token::Type::LESS:
-    return "LESS";
+    return "'<'";
   case Token::Type::LESS_LESS:
-    return "LESS_LESS";
+    return "'<<";
   case Token::Type::LESS_EQUAL:
-    return "LESS_EQUAL";
+    return "'<='";
   case Token::Type::EQUAL:
-    return "EQUAL";
+    return "'='";
   case Token::Type::EQUAL_EQUAL:
-    return "EQUAL_EQUAL";
+    return "'=='";
   case Token::Type::GREATER:
-    return "GREATER";
+    return "'>'";
   case Token::Type::GREATER_GREATER:
-    return "GREATER_GREATER";
+    return "'>='";
   case Token::Type::GREATER_EQUAL:
-    return "GREATER_EQUAL";
+    return "'>>'";
   case Token::Type::QUESTION:
-    return "QUESTION";
+    return "'?'";
   case Token::Type::AT_SIGN:
-    return "AT_SIGN";
+    return "'@'";
   case Token::Type::PLAIN_TEXT:
-    return "PLAIN_TEXT";
+    return "plain text";
   case Token::Type::IDENTIFIER:
-    return "IDENTIFIER";
+    return "identifier";
   case Token::Type::BEGIN:
-    return "BEGIN";
+    return "'begin'";
   case Token::Type::BLOCK:
-    return "BLOCK";
+    return "'block'";
+  case Token::Type::DEFINE:
+    return "'define'";
   case Token::Type::ELSE:
-    return "ELSE";
+    return "'else'";
   case Token::Type::ELSEIF:
-    return "ELSEIF";
-  case Token::Type::END:
-    return "END";
+    return "'elseif'";
   case Token::Type::ENDBLOCK:
-    return "ENDBLOCK";
-  case Token::Type::ENDIF:
-    return "ENDIF";
+    return "'endblock'";
   case Token::Type::ENDFOR:
-    return "ENDFOR";
+    return "'endfor'";
+  case Token::Type::ENDIF:
+    return "'endif'";
+  case Token::Type::ENDMACRO:
+    return "'endmacro'";
   case Token::Type::FALSE:
-    return "FALSE";
+    return "'false'";
   case Token::Type::FOR:
-    return "FOR";
-  case Token::Type::GLOBAL:
-    return "GLOBAL";
+    return "'for'";
   case Token::Type::IF:
-    return "IF";
+    return "'if'";
   case Token::Type::INCLUDE:
-    return "INCLUDE";
+    return "'include'";
   case Token::Type::INSIDE:
-    return "INLINE";
-  case Token::Type::LOCAL:
-    return "LOCAL";
+    return "'inside'";
+  case Token::Type::LET:
+    return "'let'";
   case Token::Type::LOG2:
-    return "LOG2";
+    return "'log2'";
+  case Token::Type::MACRO:
+    return "'macro'";
   case Token::Type::MUT:
-    return "MUT";
+    return "'mut'";
   case Token::Type::RETURN:
-    return "RETURN";
+    return "'return'";
   case Token::Type::SIZE:
-    return "SIZE";
+    return "'size'";
   case Token::Type::TRUE:
-    return "TRUE";
+    return "'true'";
   case Token::Type::LEFT_BRACK:
-    return "LEFT_BRACK";
+    return "'['";
   case Token::Type::ESCAPE_SEQ:
-    return "ESCAPE_SEQ";
+    return "'\\\\'";
   case Token::Type::RIGHT_BRACK:
-    return "RIGHT_BRACK";
+    return "']'";
   case Token::Type::CARET:
-    return "CARET";
+    return "'^'";
   case Token::Type::BACKTICK:
-    return "BACKTICK";
+    return "'`'";
   case Token::Type::LEFT_CURLY:
-    return "LEFT_CURLY";
+    return "'{'";
   case Token::Type::PIPE:
-    return "PIPE";
+    return "'|'";
   case Token::Type::PIPE_PIPE:
-    return "PIPE_PIPE";
+    return "'||'";
   case Token::Type::RIGHT_CURLY:
-    return "RIGHT_CURLY";
+    return "'}'";
   case Token::Type::TILDE:
-    return "TILDE";
+    return "'~'";
   default:
-    return "INVALID";
+    return "invalid token";
   }
 }

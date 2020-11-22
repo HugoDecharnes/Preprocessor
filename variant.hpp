@@ -23,7 +23,7 @@
 #include "string.hpp"
 #include "token.hpp"
 
-class Function;
+class Macro;
 
 class Variant {
 private:
@@ -43,7 +43,7 @@ private:
     String* STRING;
     List<Variant>* ARRAY;
     Map<Variant>* DICTIONARY;
-    Function* FUNCTION;
+    Macro* FUNCTION;
 
     Data();
     ~Data();
@@ -62,7 +62,7 @@ public:
   Variant(const String& rhs);
   Variant(const List<Variant>& rhs);
   Variant(const Map<Variant>& rhs);
-  Variant(Function* rhs);
+  Variant(Macro* rhs);
   Variant(const Variant& rhs);
   ~Variant();
 
@@ -72,7 +72,7 @@ public:
   Variant& operator=(const String& rhs);
   Variant& operator=(const List<Variant>& rhs);
   Variant& operator=(const Map<Variant>& rhs);
-  Variant& operator=(Function* rhs);
+  Variant& operator=(Macro* rhs);
   Variant& operator=(const Variant& rhs);
 
   Variant& operator+=(int rhs);
@@ -117,7 +117,7 @@ public:
   int get_int() const;
   bool get_bool() const;
   const String& get_string() const;
-  const Function& get_function() const;
+  const Macro& get_macro() const;
   const List<Variant>& get_array() const;
   const Map<Variant>& get_dictionary() const;
 

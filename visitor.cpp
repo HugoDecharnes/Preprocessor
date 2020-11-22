@@ -79,35 +79,33 @@ void Visitor::expr_stmt(Expr_stmt* node)
   }
 }
 
-void Visitor::variable_def(Variable_def* node)
+void Visitor::global_var_def(Global_var_def* node)
 {
   try {
-    Variant value;
-    if (node->expression != nullptr) {
-      value = node->expression->evaluate(this);
-    }
-    if (node->token.type == Token::Type::GLOBAL) {
-      node->storage->global_define(this, value);
-    }
-    else {
-      node->storage->local_define(this, value);
-    }
+    Variant value = node->expression->evaluate(this);
+    node->storage->global_define(this, value);
   }
   catch (const Semantic_error& error) {
     report(error);
   }
 }
 
-void Visitor::function_def(Function_def* node)
+void Visitor::local_var_def(Local_var_def* node)
 {
   try {
-    Variant value = node->function;
-    if (node->token.type == Token::Type::GLOBAL) {
-      node->storage->global_define(this, value);
-    }
-    else {
-      node->storage->local_define(this, value);
-    }
+    Variant value = node->expression->evaluate(this);
+    node->storage->local_define(this, value);
+  }
+  catch (const Semantic_error& error) {
+    report(error);
+  }
+}
+
+void Visitor::macro_def(Macro_def* node)
+{
+  try {
+    Variant value = node->macro;
+    node->storage->global_define(this, value);
   }
   catch (const Semantic_error& error) {
     report(error);
@@ -640,26 +638,26 @@ Variant Visitor::dictionary(Dictionary* node)
   }
 }
 
-Variant Visitor::function_call(Function_call* node)
+Variant Visitor::macro_call(Macro_call* node)
 {
   try {
     Variant base = node->left_expr->evaluate(this);
-    const Function& function = base.get_function();
-    if (node->expr_list->get_size() == function.parameters->get_size()) {
+    const Macro& macro = base.get_macro();
+    if (node->expr_list->get_size() == macro.parameters->get_size()) {
       List<std::pair<Identifier*, Variant>> param_value_list;
-      List<Identifier*>::Iterator param_iter = function.parameters->begin();
+      List<Identifier*>::Iterator param_iter = macro.parameters->begin();
       List<Expression*>::Iterator expr_iter = node->expr_list->begin();
-      for (; param_iter != function.parameters->end(); param_iter++, expr_iter++) {
+      for (; param_iter != macro.parameters->end(); param_iter++, expr_iter++) {
         Variant value = (*expr_iter)->evaluate(this);
         param_value_list.push_back(std::pair<Identifier*, Variant>(*param_iter, value));
       }
-      environment.push_func_scope(function.file_name, node->token);
+      environment.push_func_scope(macro.file_name, node->token);
       for (std::pair<Identifier*, Variant>& param_value : param_value_list) {
         param_value.first->local_define(this, param_value.second);
       }
       Variant result;
       try {
-        function.statement->evaluate(this);
+        macro.statement->evaluate(this);
       }
       catch(const Return_exc& return_exc) {
         result = return_exc.result;
@@ -668,7 +666,7 @@ Variant Visitor::function_call(Function_call* node)
       return result;
     }
     else {
-      String message = "mismatched function parameters; expecting " + to_string(function.parameters->get_size()) + " got "
+      String message = "mismatched macro parameters; expecting " + to_string(macro.parameters->get_size()) + " got "
         + to_string(node->expr_list->get_size());
       throw Semantic_error(node->token, message);
     }

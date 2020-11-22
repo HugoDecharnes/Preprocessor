@@ -346,10 +346,10 @@ public:
   Variant evaluate(Visitor* visitor) override;
 };
 
-class Function_call : public Expression {
+class Macro_call : public Expression {
 public:
-  Function_call(const Token& token, Expression* left_expr, List<Expression*>* expr_list);
-  ~Function_call();
+  Macro_call(const Token& token, Expression* left_expr, List<Expression*>* expr_list);
+  ~Macro_call();
   Expression* const left_expr;
   List<Expression*>* const expr_list;
   Variant evaluate(Visitor* visitor) override;
@@ -420,30 +420,39 @@ public:
   void evaluate(Visitor* visitor) override;
 };
 
-class Variable_def : public Directive {
+class Local_var_def : public Directive {
 public:
-  Variable_def(const Token& token, Storage* storage, Expression* expression);
-  ~Variable_def();
+  Local_var_def(const Token& token, Storage* storage, Expression* expression);
+  ~Local_var_def();
   Storage* const storage;
   Expression* const expression;
   void evaluate(Visitor* visitor) override;
 };
 
-class Function {
+class Global_var_def : public Directive {
 public:
-  Function(const String& file_name, List<Identifier*>* parameters, Statement* statement);
-  ~Function();
+  Global_var_def(const Token& token, Storage* storage, Expression* expression);
+  ~Global_var_def();
+  Storage* const storage;
+  Expression* const expression;
+  void evaluate(Visitor* visitor) override;
+};
+
+class Macro {
+public:
+  Macro(const String& file_name, List<Identifier*>* parameters, Statement* statement);
+  ~Macro();
   const String& file_name;
   List<Identifier*>* const parameters;
   Statement* const statement;
 };
 
-class Function_def : public Directive {
+class Macro_def : public Directive {
 public:
-  Function_def(const Token& token, Storage* storage, Function* function);
-  ~Function_def();
+  Macro_def(const Token& token, Storage* storage, Macro* macro);
+  ~Macro_def();
   Storage* const storage;
-  Function* const function;
+  Macro* const macro;
   void evaluate(Visitor* visitor) override;
 };
 

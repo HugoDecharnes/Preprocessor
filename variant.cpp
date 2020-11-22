@@ -61,7 +61,7 @@ Variant::Variant(const Map<Variant>& rhs)
   data.DICTIONARY = new Map<Variant>(rhs);
 }
 
-Variant::Variant(Function* rhs)
+Variant::Variant(Macro* rhs)
 {
   type = Variant::Type::FUNCTION;
   data.FUNCTION = rhs;
@@ -165,7 +165,7 @@ Variant& Variant::operator=(const Map<Variant>& rhs)
   return *this;
 }
 
-Variant& Variant::operator=(Function* rhs)
+Variant& Variant::operator=(Macro* rhs)
 {
   this->~Variant();
   type = Variant::Type::FUNCTION;
@@ -910,13 +910,13 @@ const Map<Variant>& Variant::get_dictionary() const
   }
 }
 
-const Function& Variant::get_function() const
+const Macro& Variant::get_macro() const
 {
   if (type == Variant::Type::FUNCTION) {
     return *data.FUNCTION;
   }
   else {
-    String message = "unexpected " + to_string(type) + " on type conversion; expecting function";
+    String message = "unexpected " + to_string(type) + " on type conversion; expecting macro";
     throw Bad_variant(message);
   }
 }
@@ -961,7 +961,7 @@ String Variant::to_string(Variant::Type type) const
   case Variant::Type::DICTIONARY:
     return "dictionary";
   case Variant::Type::FUNCTION:
-    return "function";
+    return "macro";
   default:
     return "void type";
   }

@@ -58,7 +58,7 @@ Storage::Storage(const Token& token)
 {
 }
 
-Function::Function(const String& file_name, List<Identifier*>* parameters, Statement* statement)
+Macro::Macro(const String& file_name, List<Identifier*>* parameters, Statement* statement)
   : file_name(file_name), parameters(parameters), statement(statement)
 {
 }
@@ -85,13 +85,18 @@ Expr_stmt::Expr_stmt(const Token& token, Expression* expression)
 {
 }
 
-Variable_def::Variable_def(const Token& token, Storage* storage, Expression* expression)
+Local_var_def::Local_var_def(const Token& token, Storage* storage, Expression* expression)
   : Directive(token), storage(storage), expression(expression)
 {
 }
 
-Function_def::Function_def(const Token& token, Storage* storage, Function* function)
-  : Directive(token), storage(storage), function(function)
+Global_var_def::Global_var_def(const Token& token, Storage* storage, Expression* expression)
+  : Directive(token), storage(storage), expression(expression)
+{
+}
+
+Macro_def::Macro_def(const Token& token, Storage* storage, Macro* macro)
+  : Directive(token), storage(storage), macro(macro)
 {
 }
 
@@ -309,7 +314,7 @@ Dictionary::Dictionary(const Token& token, List<std::pair<Expression*, Expressio
 {
 }
 
-Function_call::Function_call(const Token& token, Expression* left_expr, List<Expression*>* expr_list)
+Macro_call::Macro_call(const Token& token, Expression* left_expr, List<Expression*>* expr_list)
   : Expression(token), left_expr(left_expr), expr_list(expr_list)
 {
 }
@@ -366,7 +371,7 @@ Storage::~Storage()
 {
 }
 
-Function::~Function()
+Macro::~Macro()
 {
   for (Identifier* parameter : *parameters) {
     delete parameter;
@@ -399,7 +404,13 @@ Expr_stmt::~Expr_stmt()
   delete expression;
 }
 
-Variable_def::~Variable_def()
+Local_var_def::~Local_var_def()
+{
+  delete storage;
+  delete expression;
+}
+
+Global_var_def::~Global_var_def()
 {
   delete storage;
   delete expression;
@@ -410,10 +421,10 @@ Func_return::~Func_return()
   delete expression;
 }
 
-Function_def::~Function_def()
+Macro_def::~Macro_def()
 {
   delete storage;
-  delete function;
+  delete macro;
 }
 
 Mutate::~Mutate()
@@ -613,7 +624,7 @@ Dictionary::~Dictionary()
   delete elements;
 }
 
-Function_call::~Function_call()
+Macro_call::~Macro_call()
 {
   delete left_expr;
   for (Expression*& expression : *expr_list) {
@@ -659,14 +670,19 @@ void Expr_stmt::evaluate(Visitor* visitor)
   visitor->expr_stmt(this);
 }
 
-void Variable_def::evaluate(Visitor* visitor)
+void Local_var_def::evaluate(Visitor* visitor)
 {
-  visitor->variable_def(this);
+  visitor->local_var_def(this);
 }
 
-void Function_def::evaluate(Visitor* visitor)
+void Global_var_def::evaluate(Visitor* visitor)
 {
-  visitor->function_def(this);
+  visitor->global_var_def(this);
+}
+
+void Macro_def::evaluate(Visitor* visitor)
+{
+  visitor->macro_def(this);
 }
 
 void Func_return::evaluate(Visitor* visitor)
@@ -881,9 +897,9 @@ Variant Dictionary::evaluate(Visitor* visitor)
   return visitor->dictionary(this);
 }
 
-Variant Function_call::evaluate(Visitor* visitor)
+Variant Macro_call::evaluate(Visitor* visitor)
 {
-  return visitor->function_call(this);
+  return visitor->macro_call(this);
 }
 
 Variant Identifier::evaluate(Visitor* visitor)

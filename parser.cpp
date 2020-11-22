@@ -64,6 +64,11 @@ Statement* Parser::compound()
         stmt_list->push_back(statement);
         continue;
       }
+      case Token::Type::DEFINE: {
+        Statement* statement = global_var_def();
+        stmt_list->push_back(statement);
+        continue;
+      }
       case Token::Type::FOR: {
         Statement* statement = iteration();
         stmt_list->push_back(statement);
@@ -79,6 +84,16 @@ Statement* Parser::compound()
         stmt_list->push_back(statement);
         continue;
       }
+      case Token::Type::LET: {
+        Statement* statement = local_var_def();
+        stmt_list->push_back(statement);
+        continue;
+      }
+      case Token::Type::MACRO: {
+        Statement* statement = macro_def();
+        stmt_list->push_back(statement);
+        continue;
+      }
       case Token::Type::MUT: {
         Statement* statement = mutate();
         stmt_list->push_back(statement);
@@ -89,18 +104,12 @@ Statement* Parser::compound()
         stmt_list->push_back(statement);
         continue;
       }
-      case Token::Type::GLOBAL:
-      case Token::Type::LOCAL: {
-        Statement* statement = definition();
-        stmt_list->push_back(statement);
-        continue;
-      }
       case Token::Type::ELSE:
       case Token::Type::ELSEIF:
-      case Token::Type::END:
       case Token::Type::ENDBLOCK:
-      case Token::Type::ENDIF:
       case Token::Type::ENDFOR:
+      case Token::Type::ENDIF:
+      case Token::Type::ENDMACRO:
         if (stmt_list->get_size() == 1) {
           Statement* statement = stmt_list->front();
           delete stmt_list;
@@ -157,169 +166,57 @@ Statement* Parser::block()
   return new Block(token, statement);
 }
 
-Statement* Parser::definition()
+Statement* Parser::global_var_def()
 {
   Token token = advance();
   Storage* storage = nullptr;
-  try {
-    storage = lhs_storage();
-    if (match(Token::Type::LEFT_PAREN)) {
-      Function* function = function_def();
-      return new Function_def(token, storage, function);
-    }
-    else {
-      Expression* expression = variable_def();
-      return new Variable_def(token, storage, expression);
-    }
-  }
-  catch (const Syntactic_error& error) {
-    delete storage;
-    report(error);
-    synchronize();
-    return nullptr;
-  }
-}
-
-Expression* Parser::variable_def()
-{
   Expression* expression = nullptr;
   try {
+    storage = lhs_storage();
     consume(Token::Type::EQUAL);
     expression = ternary();
     consume(Token::Type::NEWLINE);
-    return expression;
   }
   catch (const Syntactic_error& error) {
-    delete expression;
-    throw error;
+    report(error);
+    synchronize();
   }
+  return new Global_var_def(token, storage, expression);
 }
 
-Function* Parser::function_def()
-{
-  List<Identifier*>* parameters = new List<Identifier*>();
-  Statement* statement = nullptr;
-  try {
-    if (!match(Token::Type::RIGHT_PAREN)) {
-      do {
-        Token token = consume(Token::Type::IDENTIFIER);
-        Identifier* parameter = new Identifier(token);
-        parameters->push_back(parameter);
-      } while (match(Token::Type::COMMA));
-      consume(Token::Type::RIGHT_PAREN);
-    }
-    switch (curr_token.type) {
-    case Token::Type::EQUAL: {
-      Token token = advance();
-      Expression* expression = ternary();
-      statement = new Func_return(token, expression);
-      consume(Token::Type::NEWLINE);
-      break;
-    }
-    case Token::Type::BEGIN: {
-      advance();
-      consume(Token::Type::NEWLINE);
-      statement = compound();
-      consume(Token::Type::END);
-      consume(Token::Type::NEWLINE);
-      break;
-    }
-    default:
-      String message = "expecting '=' or 'begin'; found " + to_string(curr_token.type);
-      throw Syntactic_error(curr_token, message);
-    }
-    return new Function(file_name, parameters, statement);
-  }
-  catch (const Syntactic_error& error) {
-    delete parameters;
-    delete statement;
-    throw error;
-  }
-}
-
-Statement* Parser::func_return()
+Statement* Parser::iteration()
 {
   Token token = advance();
+  Storage* key_storage = nullptr;
+  Storage* val_storage = nullptr;
   Expression* expression = nullptr;
   try {
+    consume(Token::Type::LEFT_PAREN);
+    val_storage = lhs_storage();
+    if (match(Token::Type::COMMA)) {
+      key_storage = val_storage;
+      val_storage = nullptr;
+      val_storage = lhs_storage();
+    }
+    consume(Token::Type::COLON);
     expression = ternary();
+    consume(Token::Type::RIGHT_PAREN);
     consume(Token::Type::NEWLINE);
   }
   catch (const Syntactic_error& error) {
     report(error);
     synchronize();
   }
-  return new Func_return(token, expression);
-}
-
-Statement* Parser::inclusion()
-{
-  Token token = advance();
-  Expression* expression = nullptr;
+  Statement* statement = compound();
   try {
-    expression = ternary();
+    consume(Token::Type::ENDFOR);
     consume(Token::Type::NEWLINE);
   }
   catch (const Syntactic_error& error) {
     report(error);
     synchronize();
   }
-  return new Inclusion(token, expression);
-}
-
-Statement* Parser::mutate()
-{
-  Token token = advance();
-  Location* location = nullptr;
-  Expression* expression = nullptr;
-  bool is_accumul = false;
-  try {
-    location = lhs_prefix();
-    switch (curr_token.type) {
-    case Token::Type::PLUS_EQUAL:
-      advance();
-      is_accumul = true;
-      break;
-    case Token::Type::EQUAL:
-      advance();
-      break;
-    default:
-      String message = "expecting '=' or '+='; found " + to_string(curr_token.type);
-      throw Syntactic_error(curr_token, message);
-    }
-    expression = ternary();
-    consume(Token::Type::NEWLINE);
-  }
-  catch (const Syntactic_error& error) {
-    report(error);
-    synchronize();
-  }
-  if (is_accumul) {
-    return new Accumulation(token, location, expression);
-  }
-  else {
-    return new Mutate(token, location, expression);
-  }
-}
-
-Statement* Parser::expr_stmt()
-{
-  Token token = curr_token;
-  Expression* expression = nullptr;
-  try {
-    expression = ternary();
-  }
-  catch (const Syntactic_error& error) {
-    report(error);
-    synchronize();
-  }
-  return new Expr_stmt(token, expression);
-}
-
-Statement* Parser::plain_text()
-{
-  Token token = advance();
-  return new Plain_text(token);
+  return new Iteration(token, key_storage, val_storage, expression, statement);
 }
 
 Statement* Parser::selection()
@@ -382,39 +279,143 @@ Statement* Parser::selection()
   return new Selection(token, alternatives);
 }
 
-Statement* Parser::iteration()
+Statement* Parser::inclusion()
 {
   Token token = advance();
-  Storage* key_storage = nullptr;
-  Storage* val_storage = nullptr;
   Expression* expression = nullptr;
   try {
-    consume(Token::Type::LEFT_PAREN);
-    val_storage = lhs_storage();
-    if (match(Token::Type::COMMA)) {
-      key_storage = val_storage;
-      val_storage = nullptr;
-      val_storage = lhs_storage();
-    }
-    consume(Token::Type::COLON);
     expression = ternary();
-    consume(Token::Type::RIGHT_PAREN);
     consume(Token::Type::NEWLINE);
   }
   catch (const Syntactic_error& error) {
     report(error);
     synchronize();
   }
-  Statement* statement = compound();
+  return new Inclusion(token, expression);
+}
+
+Statement* Parser::local_var_def()
+{
+  Token token = advance();
+  Storage* storage = nullptr;
+  Expression* expression = nullptr;
   try {
-    consume(Token::Type::ENDFOR);
+    storage = lhs_storage();
+    consume(Token::Type::EQUAL);
+    expression = ternary();
     consume(Token::Type::NEWLINE);
   }
   catch (const Syntactic_error& error) {
     report(error);
     synchronize();
   }
-  return new Iteration(token, key_storage, val_storage, expression, statement);
+  return new Local_var_def(token, storage, expression);
+}
+
+Statement* Parser::macro_def()
+{
+  Token token = advance();
+  Storage* storage = nullptr;
+  Statement* statement = nullptr;
+  List<Identifier*>* parameters = new List<Identifier*>();
+  try {
+    storage = lhs_storage();
+    consume(Token::Type::LEFT_PAREN);
+    if (!match(Token::Type::RIGHT_PAREN)) {
+      do {
+        Token token = consume(Token::Type::IDENTIFIER);
+        Identifier* parameter = new Identifier(token);
+        parameters->push_back(parameter);
+      } while (match(Token::Type::COMMA));
+      consume(Token::Type::RIGHT_PAREN);
+    }
+    consume(Token::Type::NEWLINE);
+  }
+  catch (const Syntactic_error& error) {
+    report(error);
+    synchronize();
+  }
+  statement = compound();
+  try {
+    consume(Token::Type::ENDMACRO);
+    consume(Token::Type::NEWLINE);
+  }
+  catch (const Syntactic_error& error) {
+    report(error);
+    synchronize();
+  }
+  Macro* macro = new Macro(file_name, parameters, statement);
+  return new Macro_def(token, storage, macro);
+}
+
+Statement* Parser::mutate()
+{
+  Token token = advance();
+  Location* location = nullptr;
+  Expression* expression = nullptr;
+  bool is_accumul = false;
+  try {
+    location = lhs_prefix();
+    switch (curr_token.type) {
+    case Token::Type::PLUS_EQUAL:
+      advance();
+      is_accumul = true;
+      break;
+    case Token::Type::EQUAL:
+      advance();
+      break;
+    default:
+      String message = "expecting '=' or '+='; found " + to_string(curr_token.type);
+      throw Syntactic_error(curr_token, message);
+    }
+    expression = ternary();
+    consume(Token::Type::NEWLINE);
+  }
+  catch (const Syntactic_error& error) {
+    report(error);
+    synchronize();
+  }
+  if (is_accumul) {
+    return new Accumulation(token, location, expression);
+  }
+  else {
+    return new Mutate(token, location, expression);
+  }
+}
+
+Statement* Parser::func_return()
+{
+  Token token = advance();
+  Expression* expression = nullptr;
+  try {
+    expression = ternary();
+    consume(Token::Type::NEWLINE);
+  }
+  catch (const Syntactic_error& error) {
+    report(error);
+    synchronize();
+  }
+  return new Func_return(token, expression);
+}
+
+Statement* Parser::expr_stmt()
+{
+  Token token = curr_token;
+  Expression* expression = nullptr;
+  try {
+    expression = ternary();
+  }
+  catch (const Syntactic_error& error) {
+    report(error);
+    synchronize();
+  }
+  return new Expr_stmt(token, expression);
+}
+
+Statement* Parser::plain_text()
+{
+  Token token = advance();
+  return new Plain_text(token);
 }
 
 /////////////////////////////////////////////////// RIGHT-HAND SIDE EXPRESSIONS ////////////////////////////////////////////////////
@@ -763,8 +764,8 @@ Expression* Parser::rhs_postfix()
       switch (curr_token.type) {
       case Token::Type::LEFT_PAREN: {
         Token token = advance();
-        List<Expression*>* expr_list = function_call();
-        expression = new Function_call(token, expression, expr_list);
+        List<Expression*>* expr_list = macro_call();
+        expression = new Macro_call(token, expression, expr_list);
         continue;
       }
       case Token::Type::LEFT_BRACK: {
@@ -784,8 +785,8 @@ Expression* Parser::rhs_postfix()
   }
 }
 
-// This function parses the argument list after the opening parenthese, and returns that expression list enclosed in between.
-List<Expression*>* Parser::function_call()
+// This macro parses the argument list after the opening parenthese, and returns that expression list enclosed in between.
+List<Expression*>* Parser::macro_call()
 {
   List<Expression*>* expr_list = nullptr;
   try {

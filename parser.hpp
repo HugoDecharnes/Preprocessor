@@ -43,18 +43,17 @@ public:
 private:
   Statement* compound();
   Statement* block();
-  Statement* definition();
-  Statement* func_return();
+  Statement* global_var_def();
+  Statement* iteration();
+  Statement* selection();
   Statement* inclusion();
+  Statement* local_var_def();
+  Statement* macro_def();
   Statement* mutate();
+  Statement* func_return();
   Statement* expr_stmt();
   Statement* plain_text();
-  Statement* selection();
-  Statement* iteration();
 
-  Function* function_def();
-
-  Expression* variable_def();
   Expression* ternary();
   Expression* logical_or();
   Expression* logical_and();
@@ -84,7 +83,7 @@ private:
 
   Storage* lhs_storage();
 
-  List<Expression*>* function_call();
+  List<Expression*>* macro_call();
   Expression* subscript();
 
   Token advance();
