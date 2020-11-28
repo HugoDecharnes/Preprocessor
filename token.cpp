@@ -115,18 +115,12 @@ String to_string(Token::Type type)
     return "plain text";
   case Token::Type::IDENTIFIER:
     return "identifier";
-  case Token::Type::BEGIN:
-    return "'begin'";
-  case Token::Type::BLOCK:
-    return "'block'";
   case Token::Type::DEFINE:
     return "'define'";
   case Token::Type::ELSE:
     return "'else'";
   case Token::Type::ELSEIF:
     return "'elseif'";
-  case Token::Type::ENDBLOCK:
-    return "'endblock'";
   case Token::Type::ENDFOR:
     return "'endfor'";
   case Token::Type::ENDIF:
@@ -149,10 +143,6 @@ String to_string(Token::Type type)
     return "'log2'";
   case Token::Type::MACRO:
     return "'macro'";
-  case Token::Type::MUT:
-    return "'mut'";
-  case Token::Type::RETURN:
-    return "'return'";
   case Token::Type::SIZE:
     return "'size'";
   case Token::Type::TRUE:

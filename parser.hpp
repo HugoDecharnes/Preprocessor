@@ -42,17 +42,14 @@ public:
 
 private:
   Statement* compound();
-  Statement* block();
-  Statement* global_var_def();
-  Statement* iteration();
-  Statement* selection();
-  Statement* inclusion();
-  Statement* local_var_def();
-  Statement* macro_def();
-  Statement* mutate();
-  Statement* func_return();
-  Statement* expr_stmt();
   Statement* plain_text();
+  Statement* expr_stmt();
+  Statement* local_var_def();
+  Statement* global_var_def();
+  Statement* macro_def();
+  Statement* selection();
+  Statement* iteration();
+  Statement* inclusion();
 
   Expression* ternary();
   Expression* logical_or();

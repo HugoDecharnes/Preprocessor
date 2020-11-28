@@ -55,15 +55,11 @@ public:
   String visit();
 
   void compound(Compound* node);
-  void block(Block* node);
   void plain_text(Plain_text* node);
   void expr_stmt(Expr_stmt* node);
   void local_var_def(Local_var_def* node);
   void global_var_def(Global_var_def* node);
   void macro_def(Macro_def* node);
-  void func_return(Func_return* node);
-  void mutate(Mutate* node);
-  void accumulation(Accumulation* node);
   void selection(Selection* node);
   void iteration(Iteration* node);
   void inclusion(Inclusion* node);

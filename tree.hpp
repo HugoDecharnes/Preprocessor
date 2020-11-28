@@ -404,14 +404,6 @@ public:
   void evaluate(Visitor* visitor) override;
 };
 
-class Block : public Directive {
-public:
-  Block(const Token& token, Statement* statement);
-  ~Block();
-  Statement* const statement;
-  void evaluate(Visitor* visitor) override;
-};
-
 class Expr_stmt : public Directive {
 public:
   Expr_stmt(const Token& token, Expression* expression);
@@ -453,32 +445,6 @@ public:
   ~Macro_def();
   Storage* const storage;
   Macro* const macro;
-  void evaluate(Visitor* visitor) override;
-};
-
-class Func_return : public Directive {
-public:
-  Func_return(const Token& token, Expression* expression);
-  ~Func_return();
-  Expression* const expression;
-  void evaluate(Visitor* visitor) override;
-};
-
-class Mutate : public Directive {
-  public:
-  Mutate(const Token& token, Location* location, Expression* expression);
-  ~Mutate();
-  Location* const location;
-  Expression* const expression;
-  void evaluate(Visitor* visitor) override;
-};
-
-class Accumulation : public Directive {
-  public:
-  Accumulation(const Token& token, Location* location, Expression* expression);
-  ~Accumulation();
-  Location* const location;
-  Expression* const expression;
   void evaluate(Visitor* visitor) override;
 };
 

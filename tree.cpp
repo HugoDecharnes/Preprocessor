@@ -75,11 +75,6 @@ Plain_text::Plain_text(const Token& token)
 {
 }
 
-Block::Block(const Token& token, Statement* statement)
-  : Directive(token), statement(statement)
-{
-}
-
 Expr_stmt::Expr_stmt(const Token& token, Expression* expression)
   : Directive(token), expression(expression)
 {
@@ -97,21 +92,6 @@ Global_var_def::Global_var_def(const Token& token, Storage* storage, Expression*
 
 Macro_def::Macro_def(const Token& token, Storage* storage, Macro* macro)
   : Directive(token), storage(storage), macro(macro)
-{
-}
-
-Func_return::Func_return(const Token& token, Expression* expression)
-  : Directive(token), expression(expression)
-{
-}
-
-Mutate::Mutate(const Token& token, Location* location, Expression* expression)
-  : Directive(token), location(location), expression(expression)
-{
-}
-
-Accumulation::Accumulation(const Token& token, Location* location, Expression* expression)
-  : Directive(token), location(location), expression(expression)
 {
 }
 
@@ -394,11 +374,6 @@ Plain_text::~Plain_text()
 {
 }
 
-Block::~Block()
-{
-  delete statement;
-}
-
 Expr_stmt::~Expr_stmt()
 {
   delete expression;
@@ -416,27 +391,10 @@ Global_var_def::~Global_var_def()
   delete expression;
 }
 
-Func_return::~Func_return()
-{
-  delete expression;
-}
-
 Macro_def::~Macro_def()
 {
   delete storage;
   delete macro;
-}
-
-Mutate::~Mutate()
-{
-  delete location;
-  delete expression;
-}
-
-Accumulation::~Accumulation()
-{
-  delete location;
-  delete expression;
 }
 
 Selection::~Selection()
@@ -660,11 +618,6 @@ void Plain_text::evaluate(Visitor* visitor)
   visitor->plain_text(this);
 }
 
-void Block::evaluate(Visitor* visitor)
-{
-  visitor->block(this);
-}
-
 void Expr_stmt::evaluate(Visitor* visitor)
 {
   visitor->expr_stmt(this);
@@ -683,21 +636,6 @@ void Global_var_def::evaluate(Visitor* visitor)
 void Macro_def::evaluate(Visitor* visitor)
 {
   visitor->macro_def(this);
-}
-
-void Func_return::evaluate(Visitor* visitor)
-{
-  visitor->func_return(this);
-}
-
-void Mutate::evaluate(Visitor* visitor)
-{
-  visitor->mutate(this);
-}
-
-void Accumulation::evaluate(Visitor* visitor)
-{
-  visitor->accumulation(this);
 }
 
 void Selection::evaluate(Visitor* visitor)

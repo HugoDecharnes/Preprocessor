@@ -54,13 +54,6 @@ void Visitor::compound(Compound* node)
   }
 }
 
-void Visitor::block(Block* node)
-{
-  environment.push_block_scope();
-  node->statement->evaluate(this);
-  environment.pop_block_scope();
-}
-
 void Visitor::plain_text(Plain_text* node)
 {
   out.append(node->token.start, node->token.length);
@@ -106,39 +99,6 @@ void Visitor::macro_def(Macro_def* node)
   try {
     Variant value = node->macro;
     node->storage->global_define(this, value);
-  }
-  catch (const Semantic_error& error) {
-    report(error);
-  }
-}
-
-void Visitor::func_return(Func_return* node)
-{
-  try {
-    Variant value = node->expression->evaluate(this);
-    throw Return_exc(value);
-  }
-  catch (const Semantic_error& error) {
-    report(error);
-  }
-}
-
-void Visitor::mutate(Mutate* node)
-{
-  try {
-    Variant value = node->expression->evaluate(this);
-    Variant& location = node->location->reference(this);
-    location = value;
-  }
-  catch (const Semantic_error& error) {
-    report(error);
-  }
-}
-
-void Visitor::accumulation(Accumulation* node)
-{
-  try {
-    node->location->reference(this) += node->expression->evaluate(this);
   }
   catch (const Semantic_error& error) {
     report(error);

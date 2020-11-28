@@ -27,12 +27,9 @@
 
 Lexer::Lexer(const char* char_stream)
 {
-  keywords.insert(String("begin"),    Token::Type::BEGIN);
-  keywords.insert(String("block"),    Token::Type::BLOCK);
   keywords.insert(String("define"),   Token::Type::DEFINE);
   keywords.insert(String("else"),     Token::Type::ELSE);
   keywords.insert(String("elseif"),   Token::Type::ELSEIF);
-  keywords.insert(String("endblock"), Token::Type::ENDBLOCK);
   keywords.insert(String("endfor"),   Token::Type::ENDFOR);
   keywords.insert(String("endif"),    Token::Type::ENDIF);
   keywords.insert(String("endmacro"), Token::Type::ENDMACRO);
@@ -41,8 +38,6 @@ Lexer::Lexer(const char* char_stream)
   keywords.insert(String("include"),  Token::Type::INCLUDE);
   keywords.insert(String("let"),      Token::Type::LET);
   keywords.insert(String("macro"),    Token::Type::MACRO);
-  keywords.insert(String("mut"),      Token::Type::MUT);
-  keywords.insert(String("return"),   Token::Type::RETURN);
 
   builtins.insert(String("false"),  Token::Type::FALSE);
   builtins.insert(String("inside"), Token::Type::INSIDE);
