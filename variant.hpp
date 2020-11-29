@@ -17,6 +17,7 @@
 #ifndef VARIANT_HPP
 #define VARIANT_HPP
 
+#include "memory.hpp"
 #include "exception.hpp"
 #include "list.hpp"
 #include "map.hpp"
@@ -34,16 +35,16 @@ private:
     STRING,
     ARRAY,
     DICTIONARY,
-    FUNCTION
+    MACRO
   };
 
   union Data {
     int INTEGER;
     bool BOOLEAN;
-    String* STRING;
-    List<Variant>* ARRAY;
-    Map<Variant>* DICTIONARY;
-    Macro* FUNCTION;
+    Shared_ptr<String> STRING;
+    Shared_ptr<List<Variant>> ARRAY;
+    Shared_ptr<Map<Variant>> DICTIONARY;
+    Macro* MACRO;
 
     Data();
     ~Data();
@@ -117,9 +118,9 @@ public:
   int get_int() const;
   bool get_bool() const;
   const String& get_string() const;
-  const Macro& get_macro() const;
   const List<Variant>& get_array() const;
   const Map<Variant>& get_dictionary() const;
+  const Macro& get_macro() const;
 
   String to_string() const;
 };

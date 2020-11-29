@@ -46,25 +46,28 @@ Variant::Variant(bool rhs)
 Variant::Variant(const String& rhs)
 {
   type = Variant::Type::STRING;
-  data.STRING = new String(rhs);
+  new (&data.STRING) Shared_ptr<String>();
+  data.STRING = std::make_shared<String>(rhs);
 }
 
 Variant::Variant(const List<Variant>& rhs)
 {
   type = Variant::Type::ARRAY;
-  data.ARRAY = new List<Variant>(rhs);
+  new (&data.ARRAY) Shared_ptr<List<Variant>>();
+  data.ARRAY = std::make_shared<List<Variant>>(rhs);
 }
 
 Variant::Variant(const Map<Variant>& rhs)
 {
   type = Variant::Type::DICTIONARY;
-  data.DICTIONARY = new Map<Variant>(rhs);
+  new (&data.DICTIONARY) Shared_ptr<Map<Variant>>();
+  data.DICTIONARY = std::make_shared<Map<Variant>>(rhs);
 }
 
 Variant::Variant(Macro* rhs)
 {
-  type = Variant::Type::FUNCTION;
-  data.FUNCTION = rhs;
+  type = Variant::Type::MACRO;
+  data.MACRO = rhs;
 }
 
 Variant::Variant(const Variant& rhs)
@@ -80,19 +83,22 @@ Variant::Variant(const Variant& rhs)
     break;
   case Variant::Type::STRING:
     type = Variant::Type::STRING;
-    data.STRING = new String(*rhs.data.STRING);
+    new (&data.STRING) Shared_ptr<String>();
+    data.STRING = rhs.data.STRING;
     break;
   case Variant::Type::ARRAY:
     type = Variant::Type::ARRAY;
-    data.ARRAY = new List<Variant>(*rhs.data.ARRAY);
+    new (&data.ARRAY) Shared_ptr<List<Variant>>();
+    data.ARRAY = rhs.data.ARRAY;
     break;
   case Variant::Type::DICTIONARY:
     type = Variant::Type::DICTIONARY;
-    data.DICTIONARY = new Map<Variant>(*rhs.data.DICTIONARY);
+    new (&data.DICTIONARY) Shared_ptr<Map<Variant>>();
+    data.DICTIONARY = rhs.data.DICTIONARY;
     break;
-  case Variant::Type::FUNCTION:
-    type = Variant::Type::FUNCTION;
-    data.FUNCTION = rhs.data.FUNCTION;
+  case Variant::Type::MACRO:
+    type = Variant::Type::MACRO;
+    data.MACRO = rhs.data.MACRO;
     break;
   default:
     type = Variant::Type::VOID;
@@ -104,13 +110,13 @@ Variant::~Variant()
 {
   switch (type) {
   case Variant::Type::STRING:
-    delete data.STRING;
+    data.STRING.reset();
     break;
   case Variant::Type::ARRAY:
-    delete data.ARRAY;
+    data.ARRAY.reset();
     break;
   case Variant::Type::DICTIONARY:
-    delete data.DICTIONARY;
+    data.STRING.reset();
     break;
   default:
     break;
@@ -145,7 +151,8 @@ Variant& Variant::operator=(const String& rhs)
 {
   this->~Variant();
   type = Variant::Type::STRING;
-  data.STRING = new String(rhs);
+  new (&data.STRING) Shared_ptr<String>();
+  data.STRING = std::make_shared<String>(rhs);
   return *this;
 }
 
@@ -153,7 +160,8 @@ Variant& Variant::operator=(const List<Variant>& rhs)
 {
   this->~Variant();
   type = Variant::Type::ARRAY;
-  data.ARRAY = new List<Variant>(rhs);
+  new (&data.ARRAY) Shared_ptr<List<Variant>>();
+  data.ARRAY = std::make_shared<List<Variant>>(rhs);
   return *this;
 }
 
@@ -161,15 +169,16 @@ Variant& Variant::operator=(const Map<Variant>& rhs)
 {
   this->~Variant();
   type = Variant::Type::DICTIONARY;
-  data.DICTIONARY = new Map<Variant>(rhs);
+  new (&data.DICTIONARY) Shared_ptr<Map<Variant>>();
+  data.DICTIONARY = std::make_shared<Map<Variant>>(rhs);
   return *this;
 }
 
 Variant& Variant::operator=(Macro* rhs)
 {
   this->~Variant();
-  type = Variant::Type::FUNCTION;
-  data.FUNCTION = rhs;
+  type = Variant::Type::MACRO;
+  data.MACRO = rhs;
   return *this;
 }
 
@@ -188,15 +197,22 @@ Variant& Variant::operator=(const Variant& rhs)
       break;
     case Variant::Type::STRING:
       type = Variant::Type::STRING;
-      data.STRING = new String(*rhs.data.STRING);
+      new (&data.STRING) Shared_ptr<String>();
+      data.STRING = rhs.data.STRING;
       break;
     case Variant::Type::ARRAY:
       type = Variant::Type::ARRAY;
-      data.ARRAY = new List<Variant>(*rhs.data.ARRAY);
+      new (&data.ARRAY) Shared_ptr<List<Variant>>();
+      data.ARRAY = rhs.data.ARRAY;
       break;
     case Variant::Type::DICTIONARY:
       type = Variant::Type::DICTIONARY;
-      data.DICTIONARY = new Map<Variant>(*rhs.data.DICTIONARY);
+      new (&data.DICTIONARY) Shared_ptr<Map<Variant>>();
+      data.DICTIONARY = rhs.data.DICTIONARY;
+      break;
+    case Variant::Type::MACRO:
+      type = Variant::Type::MACRO;
+      data.MACRO = rhs.data.MACRO;
       break;
     default:
       type = Variant::Type::VOID;
@@ -912,8 +928,8 @@ const Map<Variant>& Variant::get_dictionary() const
 
 const Macro& Variant::get_macro() const
 {
-  if (type == Variant::Type::FUNCTION) {
-    return *data.FUNCTION;
+  if (type == Variant::Type::MACRO) {
+    return *data.MACRO;
   }
   else {
     String message = "unexpected " + to_string(type) + " on type conversion; expecting macro";
@@ -960,7 +976,7 @@ String Variant::to_string(Variant::Type type) const
     return "list";
   case Variant::Type::DICTIONARY:
     return "dictionary";
-  case Variant::Type::FUNCTION:
+  case Variant::Type::MACRO:
     return "macro";
   default:
     return "void type";
