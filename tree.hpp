@@ -458,10 +458,9 @@ public:
 
 class Iteration : public Directive {
 public:
-  Iteration(const Token& token, Storage* key_storage, Storage* val_storage, Expression* expression, Statement* statement);
+  Iteration(const Token& token, Storage* storage, Expression* expression, Statement* statement);
   ~Iteration();
-  Storage* const key_storage;
-  Storage* const val_storage;
+  Storage* const storage;
   Expression* const expression;
   Statement* const statement;
   void evaluate(Visitor* visitor) override;
