@@ -126,8 +126,8 @@ void Visitor::iteration(Iteration* node)
     unsigned int index = 0;
     for (Variant& item : array) {
       environment.push_block_scope();
-      node->storage->local_define(this, item);
       environment.put_local("index", index);
+      node->storage->local_define(this, item);
       node->statement->evaluate(this);
       environment.pop_block_scope();
       index++;
