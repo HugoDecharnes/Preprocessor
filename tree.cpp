@@ -58,7 +58,7 @@ Storage::Storage(const Token& token)
 {
 }
 
-Macro::Macro(const String& file_name, List<Identifier*>* parameters, Statement* statement)
+Macro::Macro(const Path& file_name, List<Identifier*>* parameters, Statement* statement)
   : file_name(file_name), parameters(parameters), statement(statement)
 {
 }
@@ -95,7 +95,7 @@ Macro_def::Macro_def(const Token& token, Storage* storage, Macro* macro)
 {
 }
 
-Selection::Selection(const Token& token, List<std::pair<Expression*, Statement*>>* alternatives)
+Selection::Selection(const Token& token, List<Pair<Expression*, Statement*>>* alternatives)
   : Directive(token), alternatives(alternatives)
 {
 }
@@ -284,12 +284,12 @@ Quotation::Quotation(const Token& token, List<Expression*>* expr_list)
 {
 }
 
-Array::Array(const Token& token, List<std::pair<Expression*, Expression*>>* range_list)
+Array::Array(const Token& token, List<Pair<Expression*, Expression*>>* range_list)
   : Expression(token), range_list(range_list)
 {
 }
 
-Dictionary::Dictionary(const Token& token, List<std::pair<Expression*, Expression*>>* elements)
+Dictionary::Dictionary(const Token& token, List<Pair<Expression*, Expression*>>* elements)
   : Expression(token), elements(elements)
 {
 }
@@ -399,7 +399,7 @@ Macro_def::~Macro_def()
 
 Selection::~Selection()
 {
-  for (std::pair<Expression*, Statement*>& alternative : *alternatives) {
+  for (Pair<Expression*, Statement*>& alternative : *alternatives) {
     delete alternative.first;
     delete alternative.second;
   }
@@ -565,7 +565,7 @@ Quotation::~Quotation()
 
 Array::~Array()
 {
-  for (std::pair<Expression*, Expression*>& range : *range_list) {
+  for (Pair<Expression*, Expression*>& range : *range_list) {
     delete range.first;
     delete range.second;
   }
@@ -574,7 +574,7 @@ Array::~Array()
 
 Dictionary::~Dictionary()
 {
-  for (std::pair<Expression*, Expression*>& range : *elements) {
+  for (Pair<Expression*, Expression*>& range : *elements) {
     delete range.first;
     delete range.second;
   }

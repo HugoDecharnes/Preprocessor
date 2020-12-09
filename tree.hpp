@@ -17,13 +17,70 @@
 #ifndef TREE_HPP
 #define TREE_HPP
 
-#include <utility>
+class Statement;
+class Directive;
+class Expression;
+class Binary_expr;
+class Unary_expr;
+class Primary_expr;
+class Location;
+class Storage;
+class Ternary;
+class Logical_or;
+class Logical_and;
+class Bitwise_or;
+class Bitwise_xor;
+class Bitwise_and;
+class Equal;
+class Not_equal;
+class Strict_super;
+class Loose_super;
+class Strict_infer;
+class Loose_infer;
+class Inside;
+class Left_shift;
+class Right_shift;
+class Addition;
+class Subtraction;
+class Multiplication;
+class Division;
+class Modulo;
+class Exponentiation;
+class Unary_plus;
+class Unary_minus;
+class Bitwise_not;
+class Logical_not;
+class Interpolate;
+class Log2_bif;
+class Size_bif;
+class Integer;
+class True_const;
+class False_const;
+class String_literal;
+class Escape_seq;
+class Quotation;
+class Array;
+class Dictionary;
+class Macro_call;
+class Subscript;
+class Identifier;
+class Indirection;
+class Compound;
+class Plain_text;
+class Expr_stmt;
+class Local_var_def;
+class Global_var_def;
+class Macro;
+class Macro_def;
+class Selection;
+class Iteration;
+class Inclusion;
 
 #include "string.hpp"
 #include "token.hpp"
+#include "utility.hpp"
 #include "variant.hpp"
-
-class Visitor;
+#include "visitor.hpp"
 
 ////////////////////////////////////////////////////////// BASE CLASSES //////////////////////////////////////////////////////////
 
@@ -332,17 +389,17 @@ public:
 
 class Array : public Expression {
 public:
-  Array(const Token& token, List<std::pair<Expression*, Expression*>>* range_list);
+  Array(const Token& token, List<Pair<Expression*, Expression*>>* range_list);
   ~Array();
-  List<std::pair<Expression*, Expression*>>* range_list;
+  List<Pair<Expression*, Expression*>>* range_list;
   Variant evaluate(Visitor* visitor) override;
 };
 
 class Dictionary : public Expression {
 public:
-  Dictionary(const Token& token, List<std::pair<Expression*, Expression*>>* elements);
+  Dictionary(const Token& token, List<Pair<Expression*, Expression*>>* elements);
   ~Dictionary();
-  List<std::pair<Expression*, Expression*>>* elements;
+  List<Pair<Expression*, Expression*>>* elements;
   Variant evaluate(Visitor* visitor) override;
 };
 
@@ -432,9 +489,9 @@ public:
 
 class Macro {
 public:
-  Macro(const String& file_name, List<Identifier*>* parameters, Statement* statement);
+  Macro(const Path& file_name, List<Identifier*>* parameters, Statement* statement);
   ~Macro();
-  const String& file_name;
+  const Path file_name;
   List<Identifier*>* const parameters;
   Statement* const statement;
 };
@@ -450,9 +507,9 @@ public:
 
 class Selection : public Directive {
 public:
-  Selection(const Token& token, List<std::pair<Expression*, Statement*>>* alternatives);
+  Selection(const Token& token, List<Pair<Expression*, Statement*>>* alternatives);
   ~Selection();
-  List<std::pair<Expression*, Statement*>>* alternatives;
+  List<Pair<Expression*, Statement*>>* alternatives;
   void evaluate(Visitor* visitor) override;
 };
 

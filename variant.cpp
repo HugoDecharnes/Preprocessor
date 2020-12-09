@@ -31,7 +31,7 @@ Variant::Variant(int rhs)
   data.INTEGER = rhs;
 }
 
-Variant::Variant(unsigned int rhs)
+Variant::Variant(uint rhs)
 {
   type = Variant::Type::INTEGER;
   data.INTEGER = (int)rhs;
@@ -50,18 +50,18 @@ Variant::Variant(const String& rhs)
   data.STRING = std::make_shared<String>(rhs);
 }
 
-Variant::Variant(const List<Variant>& rhs)
+Variant::Variant(const Vector<Variant>& rhs)
 {
   type = Variant::Type::ARRAY;
-  new (&data.ARRAY) Shared_ptr<List<Variant>>();
-  data.ARRAY = std::make_shared<List<Variant>>(rhs);
+  new (&data.ARRAY) Shared_ptr<Vector<Variant>>();
+  data.ARRAY = std::make_shared<Vector<Variant>>(rhs);
 }
 
-Variant::Variant(const Map<Variant>& rhs)
+Variant::Variant(const Map<String, Variant>& rhs)
 {
   type = Variant::Type::DICTIONARY;
-  new (&data.DICTIONARY) Shared_ptr<Map<Variant>>();
-  data.DICTIONARY = std::make_shared<Map<Variant>>(rhs);
+  new (&data.DICTIONARY) Shared_ptr<Map<String, Variant>>();
+  data.DICTIONARY = std::make_shared<Map<String, Variant>>(rhs);
 }
 
 Variant::Variant(Macro* rhs)
@@ -88,12 +88,12 @@ Variant::Variant(const Variant& rhs)
     break;
   case Variant::Type::ARRAY:
     type = Variant::Type::ARRAY;
-    new (&data.ARRAY) Shared_ptr<List<Variant>>();
+    new (&data.ARRAY) Shared_ptr<Vector<Variant>>();
     data.ARRAY = rhs.data.ARRAY;
     break;
   case Variant::Type::DICTIONARY:
     type = Variant::Type::DICTIONARY;
-    new (&data.DICTIONARY) Shared_ptr<Map<Variant>>();
+    new (&data.DICTIONARY) Shared_ptr<Map<String, Variant>>();
     data.DICTIONARY = rhs.data.DICTIONARY;
     break;
   case Variant::Type::MACRO:
@@ -131,7 +131,7 @@ Variant& Variant::operator=(int rhs)
   return *this;
 }
 
-Variant& Variant::operator=(unsigned int rhs)
+Variant& Variant::operator=(uint rhs)
 {
   this->~Variant();
   type = Variant::Type::INTEGER;
@@ -156,21 +156,21 @@ Variant& Variant::operator=(const String& rhs)
   return *this;
 }
 
-Variant& Variant::operator=(const List<Variant>& rhs)
+Variant& Variant::operator=(const Vector<Variant>& rhs)
 {
   this->~Variant();
   type = Variant::Type::ARRAY;
-  new (&data.ARRAY) Shared_ptr<List<Variant>>();
-  data.ARRAY = std::make_shared<List<Variant>>(rhs);
+  new (&data.ARRAY) Shared_ptr<Vector<Variant>>();
+  data.ARRAY = std::make_shared<Vector<Variant>>(rhs);
   return *this;
 }
 
-Variant& Variant::operator=(const Map<Variant>& rhs)
+Variant& Variant::operator=(const Map<String, Variant>& rhs)
 {
   this->~Variant();
   type = Variant::Type::DICTIONARY;
-  new (&data.DICTIONARY) Shared_ptr<Map<Variant>>();
-  data.DICTIONARY = std::make_shared<Map<Variant>>(rhs);
+  new (&data.DICTIONARY) Shared_ptr<Map<String, Variant>>();
+  data.DICTIONARY = std::make_shared<Map<String, Variant>>(rhs);
   return *this;
 }
 
@@ -202,12 +202,12 @@ Variant& Variant::operator=(const Variant& rhs)
       break;
     case Variant::Type::ARRAY:
       type = Variant::Type::ARRAY;
-      new (&data.ARRAY) Shared_ptr<List<Variant>>();
+      new (&data.ARRAY) Shared_ptr<Vector<Variant>>();
       data.ARRAY = rhs.data.ARRAY;
       break;
     case Variant::Type::DICTIONARY:
       type = Variant::Type::DICTIONARY;
-      new (&data.DICTIONARY) Shared_ptr<Map<Variant>>();
+      new (&data.DICTIONARY) Shared_ptr<Map<String, Variant>>();
       data.DICTIONARY = rhs.data.DICTIONARY;
       break;
     case Variant::Type::MACRO:
@@ -234,7 +234,7 @@ Variant& Variant::operator+=(int rhs)
   }
 }
 
-Variant& Variant::operator+=(unsigned int rhs)
+Variant& Variant::operator+=(uint rhs)
 {
   if (type == Variant::Type::INTEGER) {
     data.INTEGER += (int)rhs;
@@ -270,10 +270,12 @@ Variant& Variant::operator+=(const String& rhs)
   }
 }
 
-Variant& Variant::operator+=(const List<Variant>& rhs)
+Variant& Variant::operator+=(const Vector<Variant>& rhs)
 {
   if (type == Variant::Type::ARRAY) {
-    *data.ARRAY += rhs;
+    for (const Variant& item : rhs) {
+      data.ARRAY->push_back(item);
+    }
     return *this;
   }
   else {
@@ -282,10 +284,12 @@ Variant& Variant::operator+=(const List<Variant>& rhs)
   }
 }
 
-Variant& Variant::operator+=(const Map<Variant>& rhs)
+Variant& Variant::operator+=(const Map<String, Variant>& rhs)
 {
   if (type == Variant::Type::DICTIONARY) {
-    *data.DICTIONARY += rhs;
+    for (const Pair<String, Variant>& item : rhs) {
+      data.DICTIONARY->insert(item);
+    }
     return *this;
   }
   else {
@@ -326,7 +330,9 @@ Variant& Variant::operator+=(const Variant& rhs)
     }
   case Variant::Type::ARRAY:
     if (rhs.type == Variant::Type::ARRAY) {
-      *data.ARRAY += *rhs.data.ARRAY;
+      for (const Variant& item : *rhs.data.ARRAY) {
+        data.ARRAY->push_back(item);
+      }
       break;
     }
     else {
@@ -335,7 +341,9 @@ Variant& Variant::operator+=(const Variant& rhs)
     }
   case Variant::Type::DICTIONARY:
     if (rhs.type == Variant::Type::DICTIONARY) {
-      *data.DICTIONARY += *rhs.data.DICTIONARY;
+      for (const Pair<String, Variant>& item : *rhs.data.DICTIONARY) {
+        data.DICTIONARY->insert(item);
+      }
       break;
     }
     else {
@@ -360,7 +368,7 @@ Variant& Variant::operator[](int rhs) const
   }
 }
 
-Variant& Variant::operator[](unsigned int rhs) const
+Variant& Variant::operator[](uint rhs) const
 {
   if (type == Variant::Type::ARRAY) {
     return data.ARRAY->at(rhs);
@@ -473,7 +481,9 @@ Variant Variant::operator+(Variant rhs) const
     }
   case Variant::Type::STRING:
     if (rhs.type == Variant::Type::STRING) {
-      return *data.STRING + *rhs.data.STRING;
+      Variant result(*data.STRING);
+      result += *rhs.data.STRING;
+      return result;
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '+' right-hand side; expecting string";
@@ -481,7 +491,9 @@ Variant Variant::operator+(Variant rhs) const
     }
   case Variant::Type::ARRAY:
     if (rhs.type == Variant::Type::ARRAY) {
-      return *data.ARRAY + *rhs.data.ARRAY;
+      Variant result(*data.ARRAY);
+      result += *rhs.data.ARRAY;
+      return result;
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '+' right-hand side; expecting list";
@@ -489,7 +501,9 @@ Variant Variant::operator+(Variant rhs) const
     }
   case Variant::Type::DICTIONARY:
     if (rhs.type == Variant::Type::DICTIONARY) {
-      return *data.DICTIONARY + *rhs.data.DICTIONARY;
+      Variant result(*data.DICTIONARY);
+      result += *rhs.data.DICTIONARY;
+      return result;
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '+' right-hand side; expecting dictionary";
@@ -904,7 +918,7 @@ const String& Variant::get_string() const
   }
 }
 
-const List<Variant>& Variant::get_array() const
+const Vector<Variant>& Variant::get_array() const
 {
   if (type == Variant::Type::ARRAY) {
     return *data.ARRAY;
@@ -915,7 +929,7 @@ const List<Variant>& Variant::get_array() const
   }
 }
 
-const Map<Variant>& Variant::get_dictionary() const
+const Map<String, Variant>& Variant::get_dictionary() const
 {
   if (type == Variant::Type::DICTIONARY) {
     return *data.DICTIONARY;
@@ -937,22 +951,15 @@ const Macro& Variant::get_macro() const
   }
 }
 
-//////////////////////////////////////////////////////// EXCEPTION CLASSES /////////////////////////////////////////////////////////
-
-Bad_variant::Bad_variant(const String& message)
-  : message(message)
-{
-}
-
 ///////////////////////////////////////////////////////////// HANDLERS /////////////////////////////////////////////////////////////
 
 String Variant::to_string() const
 {
   switch (type) {
   case Variant::Type::INTEGER:
-    return ::to_string(data.INTEGER);
+    return std::to_string(data.INTEGER);
   case Variant::Type::BOOLEAN:
-    return ::to_string(data.BOOLEAN);
+    return std::to_string(data.BOOLEAN);
   case Variant::Type::STRING:
     return *data.STRING;
   case Variant::Type::VOID:

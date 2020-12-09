@@ -18,8 +18,11 @@
 #define MAIN_HPP
 
 #include <iostream>
-#include <thread>
+
 #include "context.hpp"
+#include "filesystem.hpp"
 #include "string.hpp"
+#include "thread.hpp"
+#include "utility.hpp"
 
 #endif // MAIN_HPP

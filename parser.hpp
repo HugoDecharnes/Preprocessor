@@ -18,24 +18,26 @@
 #define PARSER_HPP
 
 #include <iostream>
-#include <utility>
+
 #include "exception.hpp"
-#include "list.hpp"
+#include "filesystem.hpp"
 #include "lexer.hpp"
+#include "list.hpp"
 #include "string.hpp"
 #include "token.hpp"
 #include "tree.hpp"
+#include "utility.hpp"
 
 class Parser {
 public:
-  Parser(const String& file_name, Lexer& lexer);
+  Parser(const Path& file_name, Lexer& lexer);
   ~Parser();
 
 private:
-  const String& file_name;
+  const Path& file_name;
   Lexer& lexer;
   Token curr_token;
-  unsigned int error_count;
+  uint error_count;
 
 public:
   Statement* parse();

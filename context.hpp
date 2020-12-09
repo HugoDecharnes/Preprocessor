@@ -17,16 +17,16 @@
 #ifndef CONTEXT_HPP
 #define CONTEXT_HPP
 
-#include <fstream>
-#include <thread>
-
 class Context;
 
 #include "environment.hpp"
+#include "fstream.hpp"
 #include "lexer.hpp"
 #include "map.hpp"
 #include "parser.hpp"
+#include "thread.hpp"
 #include "tree.hpp"
+#include "utility.hpp"
 #include "visitor.hpp"
 
 class Context {
@@ -37,7 +37,7 @@ public:
   Statement* parse_tree;
 };
 
-void compile(unsigned int argc, unsigned int thread_count, unsigned int thread_id, Map<Context>& context_list);
-void generate(unsigned int argc, unsigned int thread_count, unsigned int thread_id, Map<Context>& context_list);
+void compile(uint argc, uint thread_count, uint thread_id, Map<String, Context>& context_list);
+void generate(uint argc, uint thread_count, uint thread_id, Map<String, Context>& context_list);
 
 #endif // CONTEXT_HPP

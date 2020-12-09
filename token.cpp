@@ -14,7 +14,6 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-#include <iostream>
 #include "token.hpp"
 
 Token::Token()
@@ -22,7 +21,7 @@ Token::Token()
 {
 }
 
-Token::Token(Token::Type type, const char* start, unsigned int length, unsigned int line, unsigned int column)
+Token::Token(Token::Type type, const char* start, uint length, uint line, uint column)
   : type(type), start(start), length(length), line(line), column(column)
 {
 }
@@ -40,7 +39,7 @@ String Token::get_text() const
 
 String Token::to_string() const
 {
-  return "[" + ::to_string(line) + ":" + ::to_string(column) + "=\"" + String(start, length)
+  return "[" + std::to_string(line) + ":" + std::to_string(column) + "=\"" + String(start, length)
     + "\"," + ::to_string(type) + "]";
 }
 

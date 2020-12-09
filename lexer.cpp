@@ -27,23 +27,23 @@
 
 Lexer::Lexer(const char* char_stream)
 {
-  keywords.insert(String("define"),   Token::Type::DEFINE);
-  keywords.insert(String("else"),     Token::Type::ELSE);
-  keywords.insert(String("elseif"),   Token::Type::ELSEIF);
-  keywords.insert(String("endfor"),   Token::Type::ENDFOR);
-  keywords.insert(String("endif"),    Token::Type::ENDIF);
-  keywords.insert(String("endmacro"), Token::Type::ENDMACRO);
-  keywords.insert(String("for"),      Token::Type::FOR);
-  keywords.insert(String("if"),       Token::Type::IF);
-  keywords.insert(String("include"),  Token::Type::INCLUDE);
-  keywords.insert(String("let"),      Token::Type::LET);
-  keywords.insert(String("macro"),    Token::Type::MACRO);
+  keywords.insert(Pair<String, Token::Type>("define",   Token::Type::DEFINE));
+  keywords.insert(Pair<String, Token::Type>("else",     Token::Type::ELSE));
+  keywords.insert(Pair<String, Token::Type>("elseif",   Token::Type::ELSEIF));
+  keywords.insert(Pair<String, Token::Type>("endfor",   Token::Type::ENDFOR));
+  keywords.insert(Pair<String, Token::Type>("endif",    Token::Type::ENDIF));
+  keywords.insert(Pair<String, Token::Type>("endmacro", Token::Type::ENDMACRO));
+  keywords.insert(Pair<String, Token::Type>("for",      Token::Type::FOR));
+  keywords.insert(Pair<String, Token::Type>("if",       Token::Type::IF));
+  keywords.insert(Pair<String, Token::Type>("include",  Token::Type::INCLUDE));
+  keywords.insert(Pair<String, Token::Type>("let",      Token::Type::LET));
+  keywords.insert(Pair<String, Token::Type>("macro",    Token::Type::MACRO));
 
-  builtins.insert(String("false"),  Token::Type::FALSE);
-  builtins.insert(String("inside"), Token::Type::INSIDE);
-  builtins.insert(String("log2"),   Token::Type::LOG2);
-  builtins.insert(String("size"),   Token::Type::SIZE);
-  builtins.insert(String("true"),   Token::Type::TRUE);
+  builtins.insert(Pair<String, Token::Type>("false",  Token::Type::FALSE));
+  builtins.insert(Pair<String, Token::Type>("inside", Token::Type::INSIDE));
+  builtins.insert(Pair<String, Token::Type>("log2",   Token::Type::LOG2));
+  builtins.insert(Pair<String, Token::Type>("size",   Token::Type::SIZE));
+  builtins.insert(Pair<String, Token::Type>("true",   Token::Type::TRUE));
 
   curr_char = char_stream;
   curr_line = 1;
@@ -252,14 +252,14 @@ Token Lexer::preprocessor()
         advance();
       }
       String string(start_char, length);
-      Token::Type* type = keywords.find(string);
-      if (type != nullptr) {
+      Map<String, Token::Type>::iterator type = keywords.find(string);
+      if (type != keywords.end()) {
         is_inline = false;
-        return emit(*type);
+        return emit(type->second);
       }
       type = builtins.find(string);
-      if (type != nullptr) {
-        return emit(*type);
+      if (type != builtins.end()) {
+        return emit(type->second);
       }
       if (nesting_level == 0 && is_inline && *curr_char != '(') {
         mode = Lexer::Mode::VERILOG;

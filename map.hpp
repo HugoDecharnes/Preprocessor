@@ -17,66 +17,9 @@
 #ifndef MAP_HPP
 #define MAP_HPP
 
-#include <utility>
-#include "exception.hpp"
-#include "string.hpp"
+#include <map>
 
-//////////////////////////////////////////////////////////// CORE CLASS ////////////////////////////////////////////////////////////
-
-template<class T>
-class Map {
-private:
-  class Node {
-  public:
-    Node(const String& key, const T& value);
-    ~Node();
-
-    std::pair<String, T> entry;
-    Map<T>::Node* left;
-    Map<T>::Node* right;
-    unsigned int weight;
-  };
-
-  Map<T>::Node* root_node;
-  unsigned int size;
-
-  T& emplace(Map<T>::Node*& node, const String& key);
-  T& insert(Map<T>::Node*& node, const String& key, const T& value);
-
-  T& at(Map<T>::Node* const node, const String& key) const;
-  T* find(Map<T>::Node* const node, const String& key) const;
-  std::pair<String, T>& at(Map<T>::Node* const& node, unsigned int index) const;
-
-  void erase(Map<T>::Node*& node, const String& key);
-
-  void swap(Map<T>::Node*& node_1, Map<T>::Node*& node_2);
-
-  void lr_balance(Map<T>::Node*& node);
-  void rl_balance(Map<T>::Node*& node);
-  void left_rotate(Map<T>::Node*& node);
-  void right_rotate(Map<T>::Node*& node);
-
-  Map<T>::Node*& min_value(Map<T>::Node*& node) const;
-
-public:
-  Map();
-  Map(const Map<T>& map);
-  ~Map();
-
-  Map<T>& operator+=(const Map<T>& rhs);
-
-  Map<T> operator+(const Map<T>& rhs) const;
-
-  T& emplace(const String& key);
-  T& insert(const String& key, const T& value);
-
-  T& at(const String& key) const;
-  T* find(const String& key) const;
-  std::pair<String, T>& at(unsigned int index) const;
-
-  void erase(const String& key);
-
-  unsigned int get_size() const;
-};
+template<class Key, class T>
+using Map = std::map<Key, T>;
 
 #endif // MAP_HPP

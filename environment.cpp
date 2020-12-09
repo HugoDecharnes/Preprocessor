@@ -16,10 +16,10 @@
 
 #include "environment.hpp"
 
-Environment::Environment(const String& file_name)
-  : curr_file(&file_name)
+Environment::Environment(const Path& file_name)
+  : curr_file(file_name)
 {
-  locals.push_front(Map<Variant>());
+  locals.push_front(Map<String, Variant>());
   push_block_scope();
 }
 
@@ -29,20 +29,20 @@ Environment::~Environment()
 
 void Environment::put_global(const String& key, const Variant& value)
 {
-  globals.insert(key, value);
+  globals.insert(Pair<String, Variant>(key, value));
 }
 
 void Environment::put_local(const String& key, const Variant& value)
 {
-  locals.front().insert(key, value);
+  locals.front().insert(Pair<String, Variant>(key, value));
 }
 
 Variant& Environment::get(const String& key)
 {
-  for (Map<Variant>& scope : locals) {
-    Variant* result = scope.find(key);
-    if (result != nullptr) {
-      return *result;
+  for (Map<String, Variant>& scope : locals) {
+    Map<String, Variant>::iterator result = scope.find(key);
+    if (result != scope.end()) {
+      return result->second;
     }
   }
   return globals.at(key);
@@ -50,20 +50,20 @@ Variant& Environment::get(const String& key)
 
 void Environment::push_block_scope()
 {
-  locals.push_front(Map<Variant>());
+  locals.push_front(Map<String, Variant>());
 }
 
-void Environment::push_func_scope(const String& file_name, const Token& token)
+void Environment::push_func_scope(const Path& file_name, const Token& token)
 {
   push_block_scope();
-  call_stack.push_front(std::pair<const String&, const Token&>(*curr_file, token));
-  curr_file = &file_name;
+  call_stack.push_front(Pair<const Path&, const Token&>(curr_file, token));
+  curr_file = file_name;
 }
 
-void Environment::push_incl_scope(const String& file_name, const Token& token)
+void Environment::push_incl_scope(const Path& file_name, const Token& token)
 {
-  call_stack.push_front(std::pair<const String&, const Token&>(*curr_file, token));
-  curr_file = &file_name;
+  call_stack.push_front(Pair<const Path&, const Token&>(curr_file, token));
+  curr_file = file_name;
 }
 
 void Environment::pop_block_scope()
@@ -74,21 +74,21 @@ void Environment::pop_block_scope()
 void Environment::pop_func_scope()
 {
   pop_block_scope();
-  curr_file = &call_stack.front().first;
+  curr_file = call_stack.front().first;
   call_stack.pop_front();
 }
 
 void Environment::pop_incl_scope()
 {
-  curr_file = &call_stack.front().first;
+  curr_file = call_stack.front().first;
   call_stack.pop_front();
 }
 
 void Environment::report(const Semantic_error& error) const
 {
-  String message = *curr_file + ":" + error.message + "\n";
-  for (const std::pair<const String&, const Token&>& call : call_stack) {
-    message += "from " + call.first + ":" + to_string(call.second.line) + ":" + to_string(call.second.column) + "\n";
+  String message = curr_file.string() + ":" + error.message + "\n";
+  for (const Pair<const String&, const Token&>& call : call_stack) {
+    message += "from " + call.first + ":" + std::to_string(call.second.line) + ":" + std::to_string(call.second.column) + "\n";
   }
   std::cerr << message.data();
 }

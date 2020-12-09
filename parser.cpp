@@ -18,7 +18,7 @@
 
 ///////////////////////////////////////////////////////////// PUBLICS //////////////////////////////////////////////////////////////
 
-Parser::Parser(const String& file_name, Lexer& lexer)
+Parser::Parser(const Path& file_name, Lexer& lexer)
   : file_name(file_name), lexer(lexer)
 {
 }
@@ -43,7 +43,7 @@ Statement* Parser::parse()
   }
   else {
     delete statement;
-    String message = file_name + ": compilation failed due to " + to_string(error_count) + " error(s)";
+    String message = file_name.string() + ": compilation failed due to " + std::to_string(error_count) + " error(s)";
     throw Runtime_error(message);
   }
 }
@@ -94,7 +94,7 @@ Statement* Parser::compound()
       case Token::Type::ENDFOR:
       case Token::Type::ENDIF:
       case Token::Type::ENDMACRO:
-        if (stmt_list->get_size() == 1) {
+        if (stmt_list->size() == 1) {
           Statement* statement = stmt_list->front();
           delete stmt_list;
           return statement;
@@ -115,7 +115,7 @@ Statement* Parser::compound()
         continue;
       }
       else {
-        if (stmt_list->get_size() == 1) {
+        if (stmt_list->size() == 1) {
           Statement* statement = stmt_list->front();
           delete stmt_list;
           return statement;
@@ -223,8 +223,8 @@ Statement* Parser::macro_def()
 Statement* Parser::selection()
 {
   Token token = advance();
-  List<std::pair<Expression*, Statement*>>* alternatives
-    = new List<std::pair<Expression*, Statement*>>();
+  List<Pair<Expression*, Statement*>>* alternatives
+    = new List<Pair<Expression*, Statement*>>();
   {
     Expression* expression = nullptr;
     try {
@@ -238,7 +238,7 @@ Statement* Parser::selection()
       synchronize();
     }
     Statement* statement = compound();
-    alternatives->push_back(std::pair<Expression*, Statement*>(expression, statement));
+    alternatives->push_back(Pair<Expression*, Statement*>(expression, statement));
   }
   while (curr_token.type == Token::Type::ELSEIF) {
     advance();
@@ -254,7 +254,7 @@ Statement* Parser::selection()
       synchronize();
     }
     Statement* statement = compound();
-    alternatives->push_back(std::pair<Expression*, Statement*>(expression, statement));
+    alternatives->push_back(Pair<Expression*, Statement*>(expression, statement));
   }
   if (curr_token.type == Token::Type::ELSE) {
     Token token = advance();
@@ -267,7 +267,7 @@ Statement* Parser::selection()
     }
     Expression* expression = new True_const(token);
     Statement* statement = compound();
-    alternatives->push_back(std::pair<Expression*, Statement*>(expression, statement));
+    alternatives->push_back(Pair<Expression*, Statement*>(expression, statement));
   }
   try {
     consume(Token::Type::ENDIF);
@@ -801,7 +801,7 @@ Expression* Parser::quotation()
 
 Expression* Parser::array()
 {
-  List<std::pair<Expression*, Expression*>>* expr_list = new List<std::pair<Expression*, Expression*>>();
+  List<Pair<Expression*, Expression*>>* expr_list = new List<Pair<Expression*, Expression*>>();
   Expression* left_expr = nullptr;
   Expression* right_expr = nullptr;
   try {
@@ -812,7 +812,7 @@ Expression* Parser::array()
         if (match(Token::Type::DOT_DOT)) {
           right_expr = ternary();
         }
-        expr_list->push_back(std::pair<Expression*, Expression*>(left_expr, right_expr));
+        expr_list->push_back(Pair<Expression*, Expression*>(left_expr, right_expr));
         left_expr = nullptr;
         right_expr = nullptr;
       } while (match(Token::Type::COMMA));
@@ -830,7 +830,7 @@ Expression* Parser::array()
 
 Expression* Parser::dictionary()
 {
-  List<std::pair<Expression*, Expression*>>* expr_list = new List<std::pair<Expression*, Expression*>>();
+  List<Pair<Expression*, Expression*>>* expr_list = new List<Pair<Expression*, Expression*>>();
   Expression* left_expr = nullptr;
   Expression* right_expr = nullptr;
   try {
@@ -840,7 +840,7 @@ Expression* Parser::dictionary()
         left_expr = ternary();
         consume(Token::Type::COLON);
         right_expr = ternary();
-        expr_list->push_back(std::pair<Expression*, Expression*>(left_expr, right_expr));
+        expr_list->push_back(Pair<Expression*, Expression*>(left_expr, right_expr));
         left_expr = nullptr;
         right_expr = nullptr;
       } while (match(Token::Type::COMMA));
@@ -991,7 +991,7 @@ void Parser::synchronize()
 
 void Parser::report(const Syntactic_error& error)
 {
-  String message = file_name + error.message + "\n";
+  String message = file_name.string() + error.message + "\n";
   std::cerr << message.data();
   error_count++;
 }

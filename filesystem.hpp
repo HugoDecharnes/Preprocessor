@@ -14,12 +14,11 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-#ifndef LIST_HPP
-#define LIST_HPP
+#ifndef FILESYSTEM_HPP
+#define FILESYSTEM_HPP
 
-#include <list>
+#include <filesystem>
 
-template<class T>
-using List = std::list<T>;
+using Path = std::filesystem::path;
 
-#endif // LIST_HPP
+#endif // FILESYSTEM_HPP

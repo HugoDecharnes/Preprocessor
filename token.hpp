@@ -17,7 +17,10 @@
 #ifndef TOKEN_HPP
 #define TOKEN_HPP
 
+#include <iostream>
+
 #include "string.hpp"
+#include "utility.hpp"
 
 class Token {
 public:
@@ -87,13 +90,13 @@ public:
 
   const Token::Type type;
   const char* start;
-  const unsigned int length;
-  const unsigned int line;
-  const unsigned int column;
+  const uint length;
+  const uint line;
+  const uint column;
 
   Token();
   Token(const Token&) = default;
-  Token(Token::Type type, const char* start, unsigned int length, unsigned int line, unsigned int column);
+  Token(Token::Type type, const char* start, uint length, uint line, uint column);
   Token& operator=(const Token&);
 
   String get_text() const;

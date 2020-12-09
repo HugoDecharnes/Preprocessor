@@ -14,12 +14,11 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-#ifndef LIST_HPP
-#define LIST_HPP
+#ifndef THREAD_HPP
+#define THREAD_HPP
 
-#include <list>
+#include <thread>
 
-template<class T>
-using List = std::list<T>;
+using Thread = std::thread;
 
-#endif // LIST_HPP
+#endif // THREAD_HPP

@@ -14,12 +14,11 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-#ifndef LIST_HPP
-#define LIST_HPP
+#ifndef FSTREAM_HPP
+#define FSTREAM_HPP
 
-#include <list>
+#include <fstream>
 
-template<class T>
-using List = std::list<T>;
+using Ofstream = std::ofstream;
 
-#endif // LIST_HPP
+#endif // FSTREAM_HPP

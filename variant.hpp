@@ -17,14 +17,16 @@
 #ifndef VARIANT_HPP
 #define VARIANT_HPP
 
-#include "memory.hpp"
+class Variant;
+class Macro;
+
 #include "exception.hpp"
-#include "list.hpp"
 #include "map.hpp"
+#include "memory.hpp"
 #include "string.hpp"
 #include "token.hpp"
-
-class Macro;
+#include "utility.hpp"
+#include "vector.hpp"
 
 class Variant {
 private:
@@ -42,8 +44,8 @@ private:
     int INTEGER;
     bool BOOLEAN;
     Shared_ptr<String> STRING;
-    Shared_ptr<List<Variant>> ARRAY;
-    Shared_ptr<Map<Variant>> DICTIONARY;
+    Shared_ptr<Vector<Variant>> ARRAY;
+    Shared_ptr<Map<String, Variant>> DICTIONARY;
     Macro* MACRO;
 
     Data();
@@ -58,34 +60,34 @@ private:
 public:
   Variant();
   Variant(int rhs);
-  Variant(unsigned int rhs);
+  Variant(uint rhs);
   Variant(bool rhs);
   Variant(const String& rhs);
-  Variant(const List<Variant>& rhs);
-  Variant(const Map<Variant>& rhs);
+  Variant(const Vector<Variant>& rhs);
+  Variant(const Map<String, Variant>& rhs);
   Variant(Macro* rhs);
   Variant(const Variant& rhs);
   ~Variant();
 
   Variant& operator=(int rhs);
-  Variant& operator=(unsigned int rhs);
+  Variant& operator=(uint rhs);
   Variant& operator=(bool rhs);
   Variant& operator=(const String& rhs);
-  Variant& operator=(const List<Variant>& rhs);
-  Variant& operator=(const Map<Variant>& rhs);
+  Variant& operator=(const Vector<Variant>& rhs);
+  Variant& operator=(const Map<String, Variant>& rhs);
   Variant& operator=(Macro* rhs);
   Variant& operator=(const Variant& rhs);
 
   Variant& operator+=(int rhs);
-  Variant& operator+=(unsigned int rhs);
+  Variant& operator+=(uint rhs);
   Variant& operator+=(bool rhs);
   Variant& operator+=(const String& rhs);
-  Variant& operator+=(const List<Variant>& rhs);
-  Variant& operator+=(const Map<Variant>& rhs);
+  Variant& operator+=(const Vector<Variant>& rhs);
+  Variant& operator+=(const Map<String, Variant>& rhs);
   Variant& operator+=(const Variant& rhs);
 
   Variant& operator[](int rhs) const;
-  Variant& operator[](unsigned int rhs) const;
+  Variant& operator[](uint rhs) const;
   Variant& operator[](const String& rhs) const;
   Variant& operator[](const Variant& rhs) const;
 
@@ -118,19 +120,11 @@ public:
   int get_int() const;
   bool get_bool() const;
   const String& get_string() const;
-  const List<Variant>& get_array() const;
-  const Map<Variant>& get_dictionary() const;
+  const Vector<Variant>& get_array() const;
+  const Map<String, Variant>& get_dictionary() const;
   const Macro& get_macro() const;
 
   String to_string() const;
-};
-
-/////////////////////////////////////////////////////// EXCEPTION CLASSES ////////////////////////////////////////////////////////
-
-class Bad_variant : public std::exception {
-public:
-  explicit Bad_variant(const String& message);
-  String message;
 };
 
 #endif // VARIANT_HPP

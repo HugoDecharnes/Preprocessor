@@ -18,7 +18,7 @@
 
 /////////////////////////////////////////////////////////////// RUN ////////////////////////////////////////////////////////////////
 
-Visitor::Visitor(const String& file_name, Statement* parse_tree, Environment& environment, Map<Context>& context_list)
+Visitor::Visitor(const Path& file_name, Statement* parse_tree, Environment& environment, Map<String, Context>& context_list)
  : file_name(file_name), parse_tree(parse_tree), environment(environment), context_list(context_list)
 {
 }
@@ -31,16 +31,12 @@ String Visitor::visit()
 {
   out = String();
   error_count = 0;
-  try {
-    parse_tree->evaluate(this);
-  }
-  catch (const Return_exc& return_exc) {
-  }
+  parse_tree->evaluate(this);
   if (error_count == 0) {
     return out;
   }
   else {
-    String message = file_name + ": generation failed due to " + to_string(error_count) + " error(s)";
+    String message = file_name.string() + ": generation failed due to " + std::to_string(error_count) + " error(s)";
     throw Runtime_error(message);
   }
 }
@@ -107,7 +103,7 @@ void Visitor::macro_def(Macro_def* node)
 
 void Visitor::selection(Selection* node)
 {
-  for (std::pair<Expression*, Statement*>& alternative : *node->alternatives) {
+  for (Pair<Expression*, Statement*>& alternative : *node->alternatives) {
     Variant condition = alternative.first->evaluate(this);
     if (condition.get_bool()) {
       environment.push_block_scope();
@@ -122,9 +118,9 @@ void Visitor::iteration(Iteration* node)
 {
   try {
     Variant value_list = node->expression->evaluate(this);
-    const List<Variant>& array = value_list.get_array();
-    unsigned int index = 0;
-    for (Variant& item : array) {
+    const Vector<Variant>& list = value_list.get_array();
+    uint index = 0;
+    for (const Variant& item : list) {
       environment.push_block_scope();
       environment.put_local("index", index);
       node->storage->local_define(this, item);
@@ -305,7 +301,7 @@ Variant Visitor::inside(Inside* node)
   try {
     Variant left_value = node->left_expr->evaluate(this);
     Variant right_val_list = node->right_expr->evaluate(this);
-    for (Variant& right_value : right_val_list.get_array()) {
+    for (const Variant& right_value : right_val_list.get_array()) {
       Variant comparison = left_value == right_value;
       if (comparison.get_bool()) {
         return true;
@@ -477,7 +473,7 @@ Variant Visitor::size_bif(Size_bif* node)
 {
   try {
     Variant value = node->expression->evaluate(this);
-    return value.get_array().get_size();
+    return (uint)value.get_array().size();
   }
   catch (const Bad_variant& error) {
     throw Semantic_error(node->token, error.message);
@@ -486,7 +482,7 @@ Variant Visitor::size_bif(Size_bif* node)
 
 Variant Visitor::integer(Integer* node)
 {
-  unsigned int length = node->token.length;
+  uint length = node->token.length;
   char* buffer = (char*)malloc(length + 1);
   memcpy(buffer, node->token.start, length);
   buffer[length] = '\0';
@@ -551,8 +547,8 @@ Variant Visitor::quotation(Quotation* node)
 Variant Visitor::array(Array* node)
 {
   try {
-    List<Variant> list;
-    for (std::pair<Expression*, Expression*>& range : *node->range_list) {
+    Vector<Variant> list;
+    for (Pair<Expression*, Expression*>& range : *node->range_list) {
       if (range.second != nullptr) {
         int first_value = range.first->evaluate(this).get_int();
         int second_value = range.second->evaluate(this).get_int();
@@ -584,11 +580,11 @@ Variant Visitor::array(Array* node)
 Variant Visitor::dictionary(Dictionary* node)
 {
   try {
-    Map<Variant> map;
-    for (std::pair<Expression*, Expression*>& element : *node->elements) {
+    Map<String, Variant> map;
+    for (Pair<Expression*, Expression*>& element : *node->elements) {
       Variant key = element.first->evaluate(this);
       Variant value = element.second->evaluate(this);
-      map.insert(key.get_string(), value);
+      map.insert(Pair<String, Variant>(key.get_string(), value));
     }
     return map;
   }
@@ -602,31 +598,26 @@ Variant Visitor::macro_call(Macro_call* node)
   try {
     Variant base = node->left_expr->evaluate(this);
     const Macro& macro = base.get_macro();
-    if (node->expr_list->get_size() == macro.parameters->get_size()) {
-      List<std::pair<Identifier*, Variant>> param_value_list;
-      List<Identifier*>::Iterator param_iter = macro.parameters->begin();
-      List<Expression*>::Iterator expr_iter = node->expr_list->begin();
+    if (node->expr_list->size() == macro.parameters->size()) {
+      List<Pair<Identifier*, Variant>> param_value_list;
+      List<Identifier*>::iterator param_iter = macro.parameters->begin();
+      List<Expression*>::iterator expr_iter = node->expr_list->begin();
       for (; param_iter != macro.parameters->end(); param_iter++, expr_iter++) {
         Variant value = (*expr_iter)->evaluate(this);
-        param_value_list.push_back(std::pair<Identifier*, Variant>(*param_iter, value));
+        param_value_list.push_back(Pair<Identifier*, Variant>(*param_iter, value));
       }
       environment.push_func_scope(macro.file_name, node->token);
-      for (std::pair<Identifier*, Variant>& param_value : param_value_list) {
+      for (Pair<Identifier*, Variant>& param_value : param_value_list) {
         param_value.first->local_define(this, param_value.second);
       }
       Variant result;
-      try {
-        macro.statement->evaluate(this);
-      }
-      catch(const Return_exc& return_exc) {
-        result = return_exc.result;
-      }
+      macro.statement->evaluate(this);
       environment.pop_func_scope();
       return result;
     }
     else {
-      String message = "mismatched macro parameters; expecting " + to_string(macro.parameters->get_size()) + " got "
-        + to_string(node->expr_list->get_size());
+      String message = "mismatched macro parameters; expecting " + std::to_string(macro.parameters->size()) + " got "
+        + std::to_string(node->expr_list->size());
       throw Semantic_error(node->token, message);
     }
   }
@@ -766,11 +757,4 @@ void Visitor::report(const Semantic_error& error)
 {
   environment.report(error);
   error_count++;
-}
-
-//////////////////////////////////////////////////////// EXCEPTION CLASSES /////////////////////////////////////////////////////////
-
-Return_exc::Return_exc(const Variant& result)
-  : result(result)
-{
 }

@@ -19,37 +19,30 @@
 
 class Visitor;
 
-#ifndef _CRT_SECURE_NO_WARNINGS
-#define _CRT_SECURE_NO_WARNINGS
-#endif
-
-#ifndef _CRT_NONSTDC_NO_DEPRECATE
-#define _CRT_NONSTDC_NO_DEPRECATE
-#endif
-
-#include <iostream>
-#include <utility>
 #include "context.hpp"
 #include "environment.hpp"
 #include "exception.hpp"
+#include "filesystem.hpp"
 #include "lexer.hpp"
 #include "parser.hpp"
 #include "string.hpp"
 #include "tree.hpp"
+#include "utility.hpp"
 #include "variant.hpp"
+#include "vector.hpp"
 
 class Visitor {
 public:
-  Visitor(const String& file_name, Statement* parse_tree, Environment& environment, Map<Context>& context_list);
+  Visitor(const Path& file_name, Statement* parse_tree, Environment& environment, Map<String, Context>& context_list);
   ~Visitor();
 
 private:
-  const String& file_name;
+  const Path& file_name;
   Statement* const parse_tree;
   Environment& environment;
-  Map<Context>& context_list;
+  Map<String, Context>& context_list;
   String out;
-  unsigned int error_count;
+  uint error_count;
 
 public:
   String visit();
@@ -116,14 +109,6 @@ public:
 
 private:
   void report(const Semantic_error& error);
-};
-
-/////////////////////////////////////////////////////// EXCEPTION CLASSES ////////////////////////////////////////////////////////
-
-class Return_exc : public std::exception {
-public:
-  explicit Return_exc(const Variant& result);
-  Variant result;
 };
 
 #endif // VISITOR_HPP

@@ -24,6 +24,7 @@
 #include "map.hpp"
 #include "string.hpp"
 #include "token.hpp"
+#include "utility.hpp"
 
 class Lexer {
 public:
@@ -40,20 +41,20 @@ private:
     VERILOG
   };
 
-  Map<Token::Type> keywords;
-  Map<Token::Type> builtins;
+  Map<String, Token::Type> keywords;
+  Map<String, Token::Type> builtins;
 
   const char* start_char;
   const char* curr_char;
-  unsigned int start_line;
-  unsigned int curr_line;
-  unsigned int start_column;
-  unsigned int curr_column;
-  unsigned int length;
+  uint start_line;
+  uint curr_line;
+  uint start_column;
+  uint curr_column;
+  uint length;
 
   Mode mode;
   bool is_inline;
-  unsigned int nesting_level;
+  uint nesting_level;
 
   Token preprocessor();
   Token quotation();

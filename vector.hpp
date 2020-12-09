@@ -14,12 +14,12 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-#ifndef LIST_HPP
-#define LIST_HPP
+#ifndef VECTOR_HPP
+#define VECTOR_HPP
 
-#include <list>
+#include <vector>
 
 template<class T>
-using List = std::list<T>;
+using Vector = std::vector<T>;
 
-#endif // LIST_HPP
+#endif // VECTOR_HPP

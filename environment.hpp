@@ -17,16 +17,19 @@
 #ifndef ENVIRONMENT_HPP
 #define ENVIRONMENT_HPP
 
-#include <utility>
+class Environment;
+
 #include "exception.hpp"
 #include "list.hpp"
 #include "map.hpp"
 #include "string.hpp"
 #include "variant.hpp"
+#include "filesystem.hpp"
+#include "utility.hpp"
 
 class Environment {
 public:
-  Environment(const String& file_name);
+  Environment(const Path& file_name);
   ~Environment();
 
   void put_global(const String& key, const Variant& value);
@@ -35,8 +38,8 @@ public:
   Variant& get(const String& key);
 
   void push_block_scope();
-  void push_func_scope(const String& file_name, const Token& token);
-  void push_incl_scope(const String& file_name, const Token& token);
+  void push_func_scope(const Path& file_name, const Token& token);
+  void push_incl_scope(const Path& file_name, const Token& token);
   void pop_block_scope();
   void pop_func_scope();
   void pop_incl_scope();
@@ -44,11 +47,11 @@ public:
   void report(const Semantic_error& error) const;
 
 private:
-  List<Map<Variant>> locals;
-  Map<Variant> globals;
+  List<Map<String, Variant>> locals;
+  Map<String, Variant> globals;
 
-  const String* curr_file;
-  List<std::pair<const String&, const Token&>> call_stack;
+  Path curr_file;
+  List<Pair<const Path&, const Token&>> call_stack;
 };
 
 #endif // ENVIRONMENT_HPP

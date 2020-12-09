@@ -38,15 +38,15 @@ Preproc_error::~Preproc_error()
 
 String Preproc_error::format(const Token& token, const String& message) const
 {
-  String format_message = to_string(token.line) + ":" + to_string(token.column) + ": "
+  String format_message = std::to_string(token.line) + ":" + std::to_string(token.column) + ": "
     + message + "\n";
   const char* const line_start = token.start - token.column + 1;
-  unsigned int length = 0;
+  uint length = 0;
   while (line_start[length] != '\n' && line_start[length] != '\0') {
     length++;
   }
   format_message += String(line_start, length) + "\n";
-  for (unsigned int offset = 1; offset < token.column; offset++) {
+  for (uint offset = 1; offset < token.column; offset++) {
     format_message += " ";
   }
   format_message += "^";
@@ -82,13 +82,20 @@ Runtime_error::~Runtime_error()
 {
 }
 
-/////////////////////////////////////////////////////////// LOGIC ERRORS ///////////////////////////////////////////////////////////
-
 Out_of_range::Out_of_range(const String& message)
-  : Exception(message)
+  : Runtime_error(message)
 {
 }
 
 Out_of_range::~Out_of_range()
+{
+}
+
+Bad_variant::Bad_variant(const String& message)
+  : Runtime_error(message)
+{
+}
+
+Bad_variant::~Bad_variant()
 {
 }

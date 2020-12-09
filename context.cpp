@@ -27,11 +27,11 @@ Context::~Context()
   delete[] char_stream;
 }
 
-void compile(unsigned int argc, unsigned int thread_count, unsigned int thread_id, Map<Context>& context_list)
+void compile(uint argc, uint thread_count, uint thread_id, Map<String, Context>& context_list)
 {
-  for (unsigned int index = thread_id; index < argc; index += thread_count) {
+  for (uint index = thread_id; index < argc; index += thread_count) {
     try {
-      std::pair<String, Context>& pair = context_list.at(index);
+      Pair<String, Context>& pair = context_list.at(index);
       String& file_name = pair.first;
       char*& char_stream = pair.second.char_stream;
       Statement*& parse_tree = pair.second.parse_tree;
@@ -68,40 +68,40 @@ void compile(unsigned int argc, unsigned int thread_count, unsigned int thread_i
   }
 }
 
-void generate(unsigned int argc, unsigned int thread_count, unsigned int thread_id, Map<Context>& context_list)
+void generate(uint argc, uint thread_count, uint thread_id, Map<String, Context>& context_list)
 {
-  for (unsigned int index = thread_id; index < argc; index += thread_count) {
+  for (uint index = thread_id; index < argc; index += thread_count) {
     try {
-      std::pair<String, Context>& pair = context_list.at(index);
-      String& file_name = pair.first;
+      Pair<Path, Context>& pair = context_list.at(index);
+      Path& file_name = pair.first;
       char*& char_stream = pair.second.char_stream;
       Statement*& parse_tree = pair.second.parse_tree;
 
-      String extension = file_name.extension();
+      Path extension = file_name.extension();
       if (extension == ".pp") {
-        String out_file_name = file_name;
-        out_file_name.remove_extension();
+        Path out_file_name = file_name;
+        out_file_name.replace_extension();
 
         if (parse_tree != nullptr) {
           Environment environment(file_name);
           Visitor visitor(file_name, parse_tree, environment, context_list);
-          String message = "info: generating " + out_file_name + "\n";
+          String message = "info: generating " + out_file_name.string() + "\n";
           std::cout << message.data();
           String out_string = visitor.visit();
 
           const char* out_stream = out_string.data();
-          std::ofstream file_out(out_file_name.data());
+          Ofstream file_out(out_file_name);
           if (file_out.is_open()) {
             file_out << out_stream;
             file_out.close();
           }
           else {
-            String message = "error: cannot create " + out_file_name;
+            String message = "error: cannot create " + out_file_name.string();
             throw Runtime_error(message);
           }
         }
         else {
-          String message = "info: skipping " + out_file_name + " due to previous error(s)";
+          String message = "info: skipping " + out_file_name.string() + " due to previous error(s)";
           throw Runtime_error(message);
         }
       }

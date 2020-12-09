@@ -19,8 +19,10 @@
 
 #include <exception>
 #include <iostream>
+
 #include "string.hpp"
 #include "token.hpp"
+#include "utility.hpp"
 
 class Exception : std::exception {
 public:
@@ -59,12 +61,16 @@ public:
   ~Runtime_error();
 };
 
-////////////////////////////////////////////////////////// LOGIC ERRORS //////////////////////////////////////////////////////////
-
-class Out_of_range : public Exception {
+class Out_of_range : public Runtime_error {
 public:
   Out_of_range(const String& message);
   ~Out_of_range();
+};
+
+class Bad_variant : public Runtime_error {
+public:
+  Bad_variant(const String& message);
+  ~Bad_variant();
 };
 
 #endif // ERROR_HPP
