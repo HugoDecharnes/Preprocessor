@@ -24,5 +24,6 @@
 #include "string.hpp"
 #include "thread.hpp"
 #include "utility.hpp"
+#include "vector.hpp"
 
 #endif // MAIN_HPP

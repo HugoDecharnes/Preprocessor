@@ -18,18 +18,20 @@
 #define ERROR_HPP
 
 #include <exception>
-#include <iostream>
+#include <stdexcept>
 
+using Exception     = std::exception;
+using Runtime_error = std::runtime_error;
+using Out_of_range  = std::out_of_range;
+
+class Preproc_error;
+class Syntactic_error;
+class Semantic_error;
+
+#include "filesystem.hpp"
 #include "string.hpp"
 #include "token.hpp"
 #include "utility.hpp"
-
-class Exception : std::exception {
-public:
-  Exception(const String& message);
-  ~Exception();
-  const String message;
-};
 
 ////////////////////////////////////////////////////// PREPROCESSOR ERRORS ///////////////////////////////////////////////////////
 
@@ -37,8 +39,15 @@ class Preproc_error : public Exception {
 public:
   Preproc_error(const Token& token, const String& message);
   ~Preproc_error();
+  const String message;
 private:
-  String format(const Token& token, const String& message) const;
+  String format(const Token& token, const String& message);
+};
+
+class Lexical_error : public Preproc_error {
+public:
+  Lexical_error(const Token& token, const String& message);
+  ~Lexical_error();
 };
 
 class Syntactic_error : public Preproc_error {
@@ -51,26 +60,6 @@ class Semantic_error : public Preproc_error {
 public:
   Semantic_error(const Token& token, const String& message);
   ~Semantic_error();
-};
-
-///////////////////////////////////////////////////////// RUNTIME ERRORS /////////////////////////////////////////////////////////
-
-class Runtime_error : public Exception {
-public:
-  Runtime_error(const String& message);
-  ~Runtime_error();
-};
-
-class Out_of_range : public Runtime_error {
-public:
-  Out_of_range(const String& message);
-  ~Out_of_range();
-};
-
-class Bad_variant : public Runtime_error {
-public:
-  Bad_variant(const String& message);
-  ~Bad_variant();
 };
 
 #endif // ERROR_HPP

@@ -76,6 +76,7 @@ class Selection;
 class Iteration;
 class Inclusion;
 
+#include "filesystem.hpp"
 #include "string.hpp"
 #include "token.hpp"
 #include "utility.hpp"
@@ -489,9 +490,9 @@ public:
 
 class Macro {
 public:
-  Macro(const Path& file_name, List<Identifier*>* parameters, Statement* statement);
+  Macro(const Path& file_path, List<Identifier*>* parameters, Statement* statement);
   ~Macro();
-  const Path file_name;
+  const Path file_path;
   List<Identifier*>* const parameters;
   Statement* const statement;
 };

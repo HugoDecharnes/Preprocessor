@@ -18,8 +18,8 @@
 
 ///////////////////////////////////////////////////////////// PUBLICS //////////////////////////////////////////////////////////////
 
-Parser::Parser(const Path& file_name, Lexer& lexer)
-  : file_name(file_name), lexer(lexer)
+Parser::Parser(Path& file_path, Lexer& lexer)
+  : file_path(file_path), lexer(lexer), error_count(0)
 {
 }
 
@@ -30,12 +30,11 @@ Parser::~Parser()
 Statement* Parser::parse()
 {
   curr_token = lexer.get_token();
-  error_count = 0;
   Statement* statement = compound();
   try {
     consume(Token::Type::END_OF_FILE);
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     report(error);
   }
   if (error_count == 0) {
@@ -43,7 +42,7 @@ Statement* Parser::parse()
   }
   else {
     delete statement;
-    String message = file_name.string() + ": compilation failed due to " + std::to_string(error_count) + " error(s)";
+    String message = file_path.string() + ": compilation failed due to " + std::to_string(error_count) + " error(s)";
     throw Runtime_error(message);
   }
 }
@@ -141,7 +140,7 @@ Statement* Parser::expr_stmt()
   try {
     expression = ternary();
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     report(error);
     synchronize();
   }
@@ -159,7 +158,7 @@ Statement* Parser::local_var_def()
     expression = ternary();
     consume(Token::Type::NEWLINE);
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     report(error);
     synchronize();
   }
@@ -177,7 +176,7 @@ Statement* Parser::global_var_def()
     expression = ternary();
     consume(Token::Type::NEWLINE);
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     report(error);
     synchronize();
   }
@@ -203,7 +202,7 @@ Statement* Parser::macro_def()
     }
     consume(Token::Type::NEWLINE);
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     report(error);
     synchronize();
   }
@@ -212,11 +211,11 @@ Statement* Parser::macro_def()
     consume(Token::Type::ENDMACRO);
     consume(Token::Type::NEWLINE);
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     report(error);
     synchronize();
   }
-  Macro* macro = new Macro(file_name, parameters, statement);
+  Macro* macro = new Macro(file_path, parameters, statement);
   return new Macro_def(token, storage, macro);
 }
 
@@ -233,7 +232,7 @@ Statement* Parser::selection()
       consume(Token::Type::RIGHT_PAREN);
       consume(Token::Type::NEWLINE);
     }
-    catch (const Syntactic_error& error) {
+    catch (const Preproc_error& error) {
       report(error);
       synchronize();
     }
@@ -249,7 +248,7 @@ Statement* Parser::selection()
       consume(Token::Type::RIGHT_PAREN);
       consume(Token::Type::NEWLINE);
     }
-    catch (const Syntactic_error& error) {
+    catch (const Preproc_error& error) {
       report(error);
       synchronize();
     }
@@ -261,7 +260,7 @@ Statement* Parser::selection()
     try {
       consume(Token::Type::NEWLINE);
     }
-    catch (const Syntactic_error& error) {
+    catch (const Preproc_error& error) {
       report(error);
       synchronize();
     }
@@ -273,7 +272,7 @@ Statement* Parser::selection()
     consume(Token::Type::ENDIF);
     consume(Token::Type::NEWLINE);
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     report(error);
     synchronize();
   }
@@ -293,7 +292,7 @@ Statement* Parser::iteration()
     consume(Token::Type::RIGHT_PAREN);
     consume(Token::Type::NEWLINE);
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     report(error);
     synchronize();
   }
@@ -302,7 +301,7 @@ Statement* Parser::iteration()
     consume(Token::Type::ENDFOR);
     consume(Token::Type::NEWLINE);
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     report(error);
     synchronize();
   }
@@ -317,7 +316,7 @@ Statement* Parser::inclusion()
     expression = ternary();
     consume(Token::Type::NEWLINE);
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     report(error);
     synchronize();
   }
@@ -341,7 +340,7 @@ Expression* Parser::ternary()
     }
     return expression;
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     delete true_branch;
     throw error;
@@ -360,7 +359,7 @@ Expression* Parser::logical_or()
     }
     return expression;
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -378,7 +377,7 @@ Expression* Parser::logical_and()
     }
     return expression;
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -396,7 +395,7 @@ Expression* Parser::bitwise_or()
     }
     return expression;
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -414,7 +413,7 @@ Expression* Parser::bitwise_xor()
     }
     return expression;
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -432,7 +431,7 @@ Expression* Parser::bitwise_and()
     }
     return expression;
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -462,7 +461,7 @@ Expression* Parser::equality()
       }
     }
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -503,7 +502,7 @@ Expression* Parser::relational()
       return expression;
     }
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -533,7 +532,7 @@ Expression* Parser::shift()
       }
     }
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -563,7 +562,7 @@ Expression* Parser::additive()
       }
     }
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -599,7 +598,7 @@ Expression* Parser::multiplicative()
       }
     }
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -617,7 +616,7 @@ Expression* Parser::exponentiation()
     }
     return expression;
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -685,7 +684,7 @@ Expression* Parser::rhs_postfix()
       }
     }
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -706,7 +705,7 @@ List<Expression*>* Parser::macro_call()
     }
     return expr_list;
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expr_list;
     throw error;
   }
@@ -758,7 +757,7 @@ Expression* Parser::rhs_grouping()
     consume(Token::Type::RIGHT_PAREN);
     return expression;
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -793,7 +792,7 @@ Expression* Parser::quotation()
       }
     }
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expr_list;
     throw error;
   }
@@ -820,7 +819,7 @@ Expression* Parser::array()
     consume(Token::Type::RIGHT_BRACK);
     return new Array(token, expr_list);
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete left_expr;
     delete right_expr;
     delete expr_list;
@@ -848,7 +847,7 @@ Expression* Parser::dictionary()
     consume(Token::Type::RIGHT_CURLY);
     return new Dictionary(token, expr_list);
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete left_expr;
     delete right_expr;
     delete expr_list;
@@ -866,7 +865,7 @@ Expression* Parser::log2_bif()
     consume(Token::Type::RIGHT_PAREN);
     return new Log2_bif(token, expression);
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -882,7 +881,7 @@ Expression* Parser::size_bif()
     consume(Token::Type::RIGHT_PAREN);
     return new Size_bif(token, expression);
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -915,7 +914,7 @@ Location* Parser::lhs_postfix()
     }
     return location;
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete location;
     throw error;
   }
@@ -929,7 +928,7 @@ Expression* Parser::subscript()
     consume(Token::Type::RIGHT_BRACK);
     return expression;
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -989,9 +988,9 @@ void Parser::synchronize()
   advance();
 }
 
-void Parser::report(const Syntactic_error& error)
+void Parser::report(const Preproc_error& error)
 {
-  String message = file_name.string() + error.message + "\n";
+  String message = file_path.string() + error.message + "\n";
   std::cerr << message.data();
   error_count++;
 }

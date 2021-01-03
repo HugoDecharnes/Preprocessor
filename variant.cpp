@@ -230,7 +230,7 @@ Variant& Variant::operator+=(int rhs)
   }
   else {
     String message = "unexpected " + to_string(type) + " on '+=' left-hand side; expecting integer";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -242,7 +242,7 @@ Variant& Variant::operator+=(uint rhs)
   }
   else {
     String message = "unexpected " + to_string(type) + " on '+=' left-hand side; expecting integer";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -254,7 +254,7 @@ Variant& Variant::operator+=(bool rhs)
   }
   else {
     String message = "unexpected " + to_string(type) + " on '+=' left-hand side; expecting boolean";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -266,7 +266,7 @@ Variant& Variant::operator+=(const String& rhs)
   }
   else {
     String message = "unexpected " + to_string(type) + " on '+=' left-hand side; expecting string";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -280,7 +280,7 @@ Variant& Variant::operator+=(const Vector<Variant>& rhs)
   }
   else {
     String message = "unexpected " + to_string(type) + " on '+=' left-hand side; expecting list";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -294,7 +294,7 @@ Variant& Variant::operator+=(const Map<String, Variant>& rhs)
   }
   else {
     String message = "unexpected " + to_string(type) + " on '+=' left-hand side; expecting dictionary";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -308,7 +308,7 @@ Variant& Variant::operator+=(const Variant& rhs)
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '+=' right-hand side; expecting integer";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   case Variant::Type::BOOLEAN:
     if (rhs.type == Variant::Type::BOOLEAN) {
@@ -317,7 +317,7 @@ Variant& Variant::operator+=(const Variant& rhs)
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '+=' right-hand side; expecting boolean";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   case Variant::Type::STRING:
     if (rhs.type == Variant::Type::STRING) {
@@ -326,7 +326,7 @@ Variant& Variant::operator+=(const Variant& rhs)
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '+=' right-hand side; expecting string";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   case Variant::Type::ARRAY:
     if (rhs.type == Variant::Type::ARRAY) {
@@ -337,7 +337,7 @@ Variant& Variant::operator+=(const Variant& rhs)
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '+=' right-hand side; expecting list";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   case Variant::Type::DICTIONARY:
     if (rhs.type == Variant::Type::DICTIONARY) {
@@ -348,11 +348,11 @@ Variant& Variant::operator+=(const Variant& rhs)
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '+=' right-hand side; expecting dictionary";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   default:
     String message = "unexpected void type on '+=' left-hand side; expecting any valid type";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
   return *this;
 }
@@ -364,7 +364,7 @@ Variant& Variant::operator[](int rhs) const
   }
   else {
     String message = "unexpected " + to_string(type) + " on '[]' left-hand side; expecting list or dictionary";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -375,7 +375,7 @@ Variant& Variant::operator[](uint rhs) const
   }
   else {
     String message = "unexpected " + to_string(type) + " on '[]' left-hand side; expecting list or dictionary";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -386,7 +386,7 @@ Variant& Variant::operator[](const String& rhs) const
   }
   else {
     String message = "unexpected " + to_string(type) + " on '[]' left-hand side; expecting list or dictionary";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -399,7 +399,7 @@ Variant& Variant::operator[](const Variant& rhs) const
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '[]' right-hand side; expecting integer";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   case Variant::Type::DICTIONARY:
     if (rhs.type == Variant::Type::STRING) {
@@ -407,11 +407,11 @@ Variant& Variant::operator[](const Variant& rhs) const
     }
     else {
       String message = "unexpected " + to_string(type) + " on '[]' right-hand side; expecting integer or string";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   default:
     String message = "unexpected " + to_string(type) + " on '[]' left-hand side; expecting list or dictionary";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -422,7 +422,7 @@ Variant Variant::operator~() const
   }
   else {
     String message = "unexpected " + to_string(type) + " on '~'; expecting integer";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -433,7 +433,7 @@ Variant Variant::operator!() const
   }
   else {
     String message = "unexpected " + to_string(type) + " on '!'; expecting boolean";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -444,7 +444,7 @@ Variant Variant::operator+() const
   }
   else {
     String message = "unexpected " + to_string(type) + " on '+'; expecting integer";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -455,7 +455,7 @@ Variant Variant::operator-() const
   }
   else {
     String message = "unexpected " + to_string(type) + " on '-'; expecting integer";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -469,7 +469,7 @@ Variant Variant::operator+(Variant rhs) const
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '+' right-hand side; expecting integer";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   case Variant::Type::BOOLEAN:
     if (rhs.type == Variant::Type::BOOLEAN) {
@@ -477,7 +477,7 @@ Variant Variant::operator+(Variant rhs) const
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '+' right-hand side; expecting boolean";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   case Variant::Type::STRING:
     if (rhs.type == Variant::Type::STRING) {
@@ -487,7 +487,7 @@ Variant Variant::operator+(Variant rhs) const
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '+' right-hand side; expecting string";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   case Variant::Type::ARRAY:
     if (rhs.type == Variant::Type::ARRAY) {
@@ -497,7 +497,7 @@ Variant Variant::operator+(Variant rhs) const
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '+' right-hand side; expecting list";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   case Variant::Type::DICTIONARY:
     if (rhs.type == Variant::Type::DICTIONARY) {
@@ -507,11 +507,11 @@ Variant Variant::operator+(Variant rhs) const
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '+' right-hand side; expecting dictionary";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   default:
     String message = "unexpected void type on '+' left-hand side; expecting any valid type";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -523,12 +523,12 @@ Variant Variant::operator-(Variant rhs) const
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '-' right-hand side; expecting integer";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   }
   else {
     String message = "unexpected " + to_string(type) + " on '-' left-hand side; expecting integer";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -540,12 +540,12 @@ Variant Variant::operator*(Variant rhs) const
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '*' right-hand side; expecting integer";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   }
   else {
     String message = "unexpected " + to_string(type) + " on '*' left-hand side; expecting integer";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -557,12 +557,12 @@ Variant Variant::operator/(Variant rhs) const
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '/' right-hand side; expecting integer";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   }
   else {
     String message = "unexpected " + to_string(type) + " on '/' left-hand side; expecting integer";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -574,12 +574,12 @@ Variant Variant::operator%(Variant rhs) const
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '%' right-hand side; expecting integer";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   }
   else {
     String message = "unexpected " + to_string(type) + " on '%' left-hand side; expecting integer";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -591,12 +591,12 @@ Variant Variant::operator^(Variant rhs) const
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '^' right-hand side; expecting integer";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   }
   else {
     String message = "unexpected " + to_string(type) + " on '^' left-hand side; expecting integer";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -608,12 +608,12 @@ Variant Variant::operator&(Variant rhs) const
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '&' right-hand side; expecting integer";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   }
   else {
     String message = "unexpected " + to_string(type) + " on '&' left-hand side; expecting integer";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -625,12 +625,12 @@ Variant Variant::operator|(Variant rhs) const
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '|' right-hand side; expecting integer";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   }
   else {
     String message = "unexpected " + to_string(type) + " on '|' left-hand side; expecting integer";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -642,12 +642,12 @@ Variant Variant::operator<(Variant rhs) const
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '<' right-hand side; expecting integer";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   }
   else {
     String message = "unexpected " + to_string(type) + " on '<' left-hand side; expecting integer";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -659,12 +659,12 @@ Variant Variant::operator>(Variant rhs) const
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '>' right-hand side; expecting integer";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   }
   else {
     String message = "unexpected " + to_string(type) + " on '>' left'-hand side; expecting integer";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -676,12 +676,12 @@ Variant Variant::operator<<(Variant rhs) const
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '<<' right-hand side; expecting integer";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   }
   else {
     String message = "unexpected " + to_string(type) + " on '<<' left-hand side; expecting integer";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -693,12 +693,12 @@ Variant Variant::operator>>(Variant rhs) const
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '>>' right-hand side; expecting integer";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   }
   else {
     String message = "unexpected " + to_string(type) + " on '>>' left-hand side; expecting integer";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -711,7 +711,7 @@ Variant Variant::operator==(Variant rhs) const
     }
     else {
       String message = "unexpected " + to_string(type) + " on '==' right-hand side; expecting integer";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   case Variant::Type::BOOLEAN:
     if (rhs.type == Variant::Type::BOOLEAN) {
@@ -719,7 +719,7 @@ Variant Variant::operator==(Variant rhs) const
     }
     else {
       String message = "unexpected " + to_string(type) + " on '==' right-hand side; expecting boolean";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   case Variant::Type::STRING:
     if (rhs.type == Variant::Type::STRING) {
@@ -727,11 +727,11 @@ Variant Variant::operator==(Variant rhs) const
     }
     else {
       String message = "unexpected " + to_string(type) + " on '==' right-hand side; expecting string";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   default:
     String message = "unexpected " + to_string(type) + " on '==' left-hand side; expecting integer, boolean or string";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -744,7 +744,7 @@ Variant Variant::operator!=(Variant rhs) const
     }
     else {
       String message = "unexpected " + to_string(type) + " on '!=' right-hand side; expecting integer";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   case Variant::Type::BOOLEAN:
     if (rhs.type == Variant::Type::BOOLEAN) {
@@ -752,7 +752,7 @@ Variant Variant::operator!=(Variant rhs) const
     }
     else {
       String message = "unexpected " + to_string(type) + " on '!=' right-hand side; expecting boolean";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   case Variant::Type::STRING:
     if (rhs.type == Variant::Type::STRING) {
@@ -760,11 +760,11 @@ Variant Variant::operator!=(Variant rhs) const
     }
     else {
       String message = "unexpected " + to_string(type) + " on '!=' right-hand side; expecting string";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   default:
     String message = "unexpected " + to_string(type) + " on '!=' left-hand side; expecting integer, boolean or string";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -776,12 +776,12 @@ Variant Variant::operator<=(Variant rhs) const
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '<=' right-hand side; expecting integer";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   }
   else {
     String message = "unexpected " + to_string(type) + " on '<=' left-hand side; expecting integer";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -793,12 +793,12 @@ Variant Variant::operator>=(Variant rhs) const
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '>=' right-hand side; expecting integer";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   }
   else {
     String message = "unexpected " + to_string(type) + " on '>=' left-hand side; expecting integer";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -810,12 +810,12 @@ Variant Variant::operator&&(Variant rhs) const
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '&&' right-hand side; expecting boolean";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   }
   else {
     String message = "unexpected " + to_string(type) + " on '&&' left-hand side; expecting boolean";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -827,12 +827,12 @@ Variant Variant::operator||(Variant rhs) const
     }
     else {
       String message = "unexpected " + to_string(rhs.type) + " on '||' right-hand side; expecting boolean";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   }
   else {
     String message = "unexpected " + to_string(type) + " on '||' left-hand side; expecting boolean";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -849,17 +849,17 @@ Variant Variant::pow(const Variant& rhs)
       }
       else {
         String message = "value on '**' right-hand side must be positive or null";
-        throw Bad_variant(message);
+        throw Bad_variant_access(message);
       }
     }
     else {
       String message = "unexpected " + rhs.to_string(rhs.type) + " on '**' right-hand side; expecting integer";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   }
   else {
     String message = "unexpected " + to_string(type) + " on '**' left-hand side; expecting integer";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -876,12 +876,12 @@ Variant Variant::log2()
     }
     else {
       String message = "value on 'log2' must be positive";
-      throw Bad_variant(message);
+      throw Bad_variant_access(message);
     }
   }
   else {
     String message = "unexpected " + to_string(type) + " on 'log2'; expecting integer";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -892,7 +892,7 @@ int Variant::get_int() const
   }
   else {
     String message = "unexpected " + to_string(type) + " on type conversion; expecting integer";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -903,51 +903,51 @@ bool Variant::get_bool() const
   }
   else {
     String message = "unexpected " + to_string(type) + " on type conversion; expecting boolean";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
-const String& Variant::get_string() const
+String& Variant::get_string() const
 {
   if (type == Variant::Type::STRING) {
     return *data.STRING;
   }
   else {
     String message = "unexpected " + to_string(type) + " on type conversion; expecting string";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
-const Vector<Variant>& Variant::get_array() const
+Vector<Variant>& Variant::get_array() const
 {
   if (type == Variant::Type::ARRAY) {
     return *data.ARRAY;
   }
   else {
     String message = "unexpected " + to_string(type) + " on type conversion; expecting list";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
-const Map<String, Variant>& Variant::get_dictionary() const
+Map<String, Variant>& Variant::get_dictionary() const
 {
   if (type == Variant::Type::DICTIONARY) {
     return *data.DICTIONARY;
   }
   else {
     String message = "unexpected " + to_string(type) + " on type conversion; expecting dictionary";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
-const Macro& Variant::get_macro() const
+Macro* Variant::get_macro() const
 {
   if (type == Variant::Type::MACRO) {
-    return *data.MACRO;
+    return data.MACRO;
   }
   else {
     String message = "unexpected " + to_string(type) + " on type conversion; expecting macro";
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -966,7 +966,7 @@ String Variant::to_string() const
     return "";
   default:
     String message = "cannot stringify " + to_string(type);
-    throw Bad_variant(message);
+    throw Bad_variant_access(message);
   }
 }
 
@@ -988,4 +988,13 @@ String Variant::to_string(Variant::Type type) const
   default:
     return "void type";
   }
+}
+
+Bad_variant_access::Bad_variant_access(const String& message)
+  : message(message)
+{
+}
+
+Bad_variant_access::~Bad_variant_access()
+{
 }

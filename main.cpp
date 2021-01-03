@@ -24,12 +24,13 @@ int main(int argc, char* argv[])
   String message = "Preprocessor v1.0.0.\n";
   std::cout << message.data();
 
-  Map<String, Context> context_list;
+  Vector<Context> context_list;
   for (uint arg = 1; arg < (uint)argc; arg++) {
     Path file_name = argv[arg];
     Path file_extension = file_name.extension();
     if (file_extension == ".pp" || file_extension == ".pph") {
-      context_list.emplace(file_name);
+      Context context(file_name);
+      context_list.push_back(context);
     }
     else {
       String message = "warning: skipping " + file_name.string() + " due to file extension; use '.pp' for source files and '.pph' for headers\n";

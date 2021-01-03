@@ -19,6 +19,7 @@
 
 #include <fstream>
 
+using Ifstream = std::ifstream;
 using Ofstream = std::ofstream;
 
 #endif // FSTREAM_HPP

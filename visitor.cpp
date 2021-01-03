@@ -18,8 +18,8 @@
 
 /////////////////////////////////////////////////////////////// RUN ////////////////////////////////////////////////////////////////
 
-Visitor::Visitor(const Path& file_name, Statement* parse_tree, Environment& environment, Map<String, Context>& context_list)
- : file_name(file_name), parse_tree(parse_tree), environment(environment), context_list(context_list)
+Visitor::Visitor(Path& file_path, Statement* parse_tree, Environment& environment, Vector<Context>& context_list)
+  : file_path(file_path), parse_tree(parse_tree), environment(environment), context_list(context_list), error_count(0)
 {
 }
 
@@ -29,16 +29,12 @@ Visitor::~Visitor()
 
 String Visitor::visit()
 {
-  out = String();
-  error_count = 0;
   parse_tree->evaluate(this);
-  if (error_count == 0) {
-    return out;
-  }
-  else {
-    String message = file_name.string() + ": generation failed due to " + std::to_string(error_count) + " error(s)";
+  if (error_count != 0) {
+    String message = file_path.string() + ": generation failed due to " + std::to_string(error_count) + " error(s)";
     throw Runtime_error(message);
   }
+  return output_string;
 }
 
 //////////////////////////////////////////////////////////// STATEMENTS ////////////////////////////////////////////////////////////
@@ -52,19 +48,20 @@ void Visitor::compound(Compound* node)
 
 void Visitor::plain_text(Plain_text* node)
 {
-  out.append(node->token.start, node->token.length);
+  output_string.append(node->token.start, node->token.length);
 }
 
 void Visitor::expr_stmt(Expr_stmt* node)
 {
   try {
-    out += node->expression->evaluate(this).to_string();
+    output_string += node->expression->evaluate(this).to_string();
   }
   catch (const Semantic_error& error) {
     report(error);
   }
-  catch (const Bad_variant& error) {
-    report(Semantic_error(node->token, error.message));
+  catch (const Bad_variant_access& exception) {
+    Semantic_error error(node->token, exception.message);
+    report(error);
   }
 }
 
@@ -132,38 +129,42 @@ void Visitor::iteration(Iteration* node)
   catch (const Semantic_error& error) {
     report(error);
   }
-  catch (const Bad_variant& error) {
-    report(Semantic_error(node->token, error.message));
+  catch (const Exception& exception) {
+    String message = exception.what();
+    Semantic_error error(node->token, message);
+    report(error);
   }
 }
 
 void Visitor::inclusion(Inclusion* node)
 {
   try {
-    Variant incl_file_name_v = node->expression->evaluate(this);
-    const String& incl_file_name = incl_file_name_v.get_string();
-    Context& incl_context = context_list.at(incl_file_name);
-    Statement* incl_parse_tree = incl_context.parse_tree;
+    Variant value = node->expression->evaluate(this);
+    const String& incl_file_name = value.get_string();
+    const Path incl_file_path(incl_file_name);
+    Statement* incl_parse_tree = nullptr;
+    for (Context& context : context_list) {
+      if (context.file_path == incl_file_path) {
+        incl_parse_tree = context.parse_tree;
+        break;
+      }
+    }
     if (incl_parse_tree != nullptr) {
-      environment.push_incl_scope(incl_file_name, node->token);
+      environment.push_incl_scope(incl_file_path, node->token);
       incl_parse_tree->evaluate(this);
       environment.pop_incl_scope();
     }
     else {
-      String message = "cannot include " + incl_file_name + " due to previous error(s)";
+      String message = "cannot include '" + incl_file_name + "'; file does not exist";
       throw Semantic_error(node->token, message);
     }
   }
-  catch (const Out_of_range& error) {
-    report(Semantic_error(node->token, error.message));
-  }
-  catch (const Bad_variant& error) {
-    report(Semantic_error(node->token, error.message));
-  }
-  catch (const Runtime_error& error) {
-    report(Semantic_error(node->token, error.message));
-  }
   catch (const Semantic_error& error) {
+    report(error);
+  }
+  catch (const Exception& exception) {
+    String message = exception.what();
+    Semantic_error error(node->token, message);
     report(error);
   }
 }
@@ -181,8 +182,8 @@ Variant Visitor::ternary(Ternary* node)
       return node->false_branch->evaluate(this);
     }
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -191,8 +192,8 @@ Variant Visitor::logical_or(Logical_or* node)
   try {
     return node->left_expr->evaluate(this) || node->right_expr->evaluate(this);
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -201,8 +202,8 @@ Variant Visitor::logical_and(Logical_and* node)
   try {
     return node->left_expr->evaluate(this) && node->right_expr->evaluate(this);
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -211,8 +212,8 @@ Variant Visitor::bitwise_or(Bitwise_or* node)
   try {
     return node->left_expr->evaluate(this) | node->right_expr->evaluate(this);
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -221,8 +222,8 @@ Variant Visitor::bitwise_xor(Bitwise_xor* node)
   try {
     return node->left_expr->evaluate(this) ^ node->right_expr->evaluate(this);
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -231,8 +232,8 @@ Variant Visitor::bitwise_and(Bitwise_and* node)
   try {
     return node->left_expr->evaluate(this) & node->right_expr->evaluate(this);
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -241,8 +242,8 @@ Variant Visitor::equal(Equal* node)
   try {
     return node->left_expr->evaluate(this) == node->right_expr->evaluate(this);
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -251,8 +252,8 @@ Variant Visitor::not_equal(Not_equal* node)
   try {
     return node->left_expr->evaluate(this) != node->right_expr->evaluate(this);
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -261,8 +262,8 @@ Variant Visitor::strict_super(Strict_super* node)
   try {
     return node->left_expr->evaluate(this) > node->right_expr->evaluate(this);
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -271,8 +272,8 @@ Variant Visitor::loose_super(Loose_super* node)
   try {
     return node->left_expr->evaluate(this) >= node->right_expr->evaluate(this);
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -281,8 +282,8 @@ Variant Visitor::strict_infer(Strict_infer* node)
   try {
     return node->left_expr->evaluate(this) < node->right_expr->evaluate(this);
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -291,8 +292,8 @@ Variant Visitor::loose_infer(Loose_infer* node)
   try {
     return node->left_expr->evaluate(this) <= node->right_expr->evaluate(this);
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -309,8 +310,8 @@ Variant Visitor::inside(Inside* node)
     }
     return false;
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -319,8 +320,8 @@ Variant Visitor::left_shift(Left_shift* node)
   try {
     return node->left_expr->evaluate(this) << node->right_expr->evaluate(this);
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -329,8 +330,8 @@ Variant Visitor::right_shift(Right_shift* node)
   try {
     return node->left_expr->evaluate(this) >> node->right_expr->evaluate(this);
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -339,8 +340,8 @@ Variant Visitor::addition(Addition* node)
   try {
     return node->left_expr->evaluate(this) + node->right_expr->evaluate(this);
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -349,8 +350,8 @@ Variant Visitor::subtraction(Subtraction* node)
   try {
     return node->left_expr->evaluate(this) - node->right_expr->evaluate(this);
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -359,8 +360,8 @@ Variant Visitor::multiplication(Multiplication* node)
   try {
     return node->left_expr->evaluate(this) * node->right_expr->evaluate(this);
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -369,8 +370,8 @@ Variant Visitor::division(Division* node)
   try {
     return node->left_expr->evaluate(this) / node->right_expr->evaluate(this);
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -379,8 +380,8 @@ Variant Visitor::modulo(Modulo* node)
   try {
     return node->left_expr->evaluate(this) % node->right_expr->evaluate(this);
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -391,8 +392,8 @@ Variant Visitor::exponentiation(Exponentiation* node)
     Variant exponent = node->right_expr->evaluate(this);
     return base.pow(exponent);
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -401,8 +402,8 @@ Variant Visitor::unary_plus(Unary_plus* node)
   try {
     return +node->expression->evaluate(this);
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -411,8 +412,8 @@ Variant Visitor::unary_minus(Unary_minus* node)
   try {
     return -node->expression->evaluate(this);
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -421,8 +422,8 @@ Variant Visitor::bitwise_not(Bitwise_not* node)
   try {
     return ~node->expression->evaluate(this);
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -431,28 +432,30 @@ Variant Visitor::logical_not(Logical_not* node)
   try {
     return !node->expression->evaluate(this);
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
 Variant Visitor::interpolate(Interpolate* node)
 {
+  Statement* parse_tree = nullptr;
   try {
     Variant value = node->expression->evaluate(this);
-    const char* char_stream = value.get_string().data();
-    Lexer lexer(char_stream);
-    Parser parser(file_name, lexer);
-    Statement* parse_tree = parser.parse();
-    Visitor visitor(file_name, parse_tree, environment, context_list);
-    String out_string = visitor.visit();
+    const char* input_stream = value.get_string().data();
+    Lexer lexer(input_stream);
+    Parser parser(file_path, lexer);
+    parse_tree = parser.parse();
+    Visitor visitor(file_path, parse_tree, environment, context_list);
+    String output_string = visitor.visit();
     delete parse_tree;
-    return out_string;
+    return output_string;
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
   catch (const Runtime_error& error) {
+    delete parse_tree;
     String message = "interpolation failed due to previous errors";
     throw Semantic_error(node->token, message);
   }
@@ -464,8 +467,8 @@ Variant Visitor::log2_bif(Log2_bif* node)
     Variant value = node->expression->evaluate(this);
     return value.log2();
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -475,20 +478,16 @@ Variant Visitor::size_bif(Size_bif* node)
     Variant value = node->expression->evaluate(this);
     return (uint)value.get_array().size();
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
 Variant Visitor::integer(Integer* node)
 {
-  uint length = node->token.length;
-  char* buffer = (char*)malloc(length + 1);
-  memcpy(buffer, node->token.start, length);
-  buffer[length] = '\0';
-  Variant value(atoi(buffer));
-  free(buffer);
-  return value;
+  String string(node->token.start, node->token.length);
+  int integer = std::stoi(string);
+  return integer;
 }
 
 Variant Visitor::true_const(True_const* node)
@@ -572,8 +571,8 @@ Variant Visitor::array(Array* node)
     }
     return list;
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -588,8 +587,8 @@ Variant Visitor::dictionary(Dictionary* node)
     }
     return map;
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -597,43 +596,44 @@ Variant Visitor::macro_call(Macro_call* node)
 {
   try {
     Variant base = node->left_expr->evaluate(this);
-    const Macro& macro = base.get_macro();
-    if (node->expr_list->size() == macro.parameters->size()) {
+    Macro* macro = base.get_macro();
+    if (node->expr_list->size() == macro->parameters->size()) {
       List<Pair<Identifier*, Variant>> param_value_list;
-      List<Identifier*>::iterator param_iter = macro.parameters->begin();
+      List<Identifier*>::iterator param_iter = macro->parameters->begin();
       List<Expression*>::iterator expr_iter = node->expr_list->begin();
-      for (; param_iter != macro.parameters->end(); param_iter++, expr_iter++) {
+      for (; param_iter != macro->parameters->end(); param_iter++, expr_iter++) {
         Variant value = (*expr_iter)->evaluate(this);
         param_value_list.push_back(Pair<Identifier*, Variant>(*param_iter, value));
       }
-      environment.push_func_scope(macro.file_name, node->token);
+      environment.push_func_scope(macro->file_path, node->token);
       for (Pair<Identifier*, Variant>& param_value : param_value_list) {
         param_value.first->local_define(this, param_value.second);
       }
       Variant result;
-      macro.statement->evaluate(this);
+      macro->statement->evaluate(this);
       environment.pop_func_scope();
       return result;
     }
     else {
-      String message = "mismatched macro parameters; expecting " + std::to_string(macro.parameters->size()) + " got "
+      String message = "mismatched macro parameters; expecting " + std::to_string(macro->parameters->size()) + " got "
         + std::to_string(node->expr_list->size());
       throw Semantic_error(node->token, message);
     }
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
 Variant Visitor::eval_identifier(Identifier* node)
 {
+  String key = node->token.get_text();
   try {
-    String key = node->token.get_text();
     return environment.get(key);
   }
   catch (const Out_of_range& error) {
-    throw Semantic_error(node->token, error.message);
+    String message = "cannot find '" + key + "'; identifier undefined";
+    throw Semantic_error(node->token, message);
   }
 }
 
@@ -646,21 +646,28 @@ Variant Visitor::eval_subscript(Subscript* node)
     return left_value[right_value];
   }
   catch (const Out_of_range& error) {
-    throw Semantic_error(node->token, error.message);
+    String message = "index is out of range";
+    throw Semantic_error(node->token, message);
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }  
 }
 
 Variant Visitor::eval_indirection(Indirection* node)
 {
+  Variant name = node->expression->evaluate(this);
+  String key;
   try {
-    Variant key = node->expression->evaluate(this);
-    return environment.get(key.get_string());
+    key = name.get_string();
+    return environment.get(key);
   }
   catch (const Out_of_range& error) {
-    throw Semantic_error(node->token, error.message);
+    String message = "cannot find '" + key + "'; identifier undefined";
+    throw Semantic_error(node->token, message);
+  }
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -668,40 +675,48 @@ Variant Visitor::eval_indirection(Indirection* node)
 
 Variant& Visitor::ref_identifier(Identifier* node)
 {
+  String key = node->token.get_text();
   try {
-    String key = node->token.get_text();
     return environment.get(key);
   }
   catch (const Out_of_range& error) {
-    throw Semantic_error(node->token, error.message);
+    String message = "cannot find '" + key + "'; identifier undefined";
+    throw Semantic_error(node->token, message);
   }
 }
 
 Variant& Visitor::ref_subscript(Subscript* node)
 {
+  String key = node->token.get_text();
   try {
-    String key = node->token.get_text();
     Location* left_location = (Location*)node->left_expr;
     Variant& left_value = left_location->reference(this);
     Variant right_value = node->right_expr->evaluate(this);
     return left_value[right_value];
   }
   catch (const Out_of_range& error) {
-    throw Semantic_error(node->token, error.message);
+    String message = "index is out of range";
+    throw Semantic_error(node->token, message);
   }
-  catch (const Bad_variant& error) {
-    throw Semantic_error(node->token, error.message);
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
 Variant& Visitor::ref_indirection(Indirection* node)
 {
+  Variant name = node->expression->evaluate(this);
+  String key;
   try {
-    Variant key = node->expression->evaluate(this);
-    return environment.get(key.get_string());
+    key = name.get_string();
+    return environment.get(key);
   }
   catch (const Out_of_range& error) {
-    throw Semantic_error(node->token, error.message);
+    String message = "cannot find '" + key + "'; identifier undefined";
+    throw Semantic_error(node->token, message);
+  }
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
@@ -709,45 +724,59 @@ Variant& Visitor::ref_indirection(Indirection* node)
 
 void Visitor::global_id_def(Identifier* node, const Variant& value)
 {
+  String key = node->token.get_text();
   try {
-    String key = node->token.get_text();
     environment.put_global(key, value);
   }
   catch (const Out_of_range& error) {
-    throw Semantic_error(node->token, error.message);
+    String message = "cannot define '" + key + "'; identifier already defined";
+    throw Semantic_error(node->token, message);
   }
 }
 
 void Visitor::local_id_def(Identifier* node, const Variant& value)
 {
+  String key = node->token.get_text();
   try {
-    String key = node->token.get_text();
     environment.put_local(key, value);
   }
   catch (const Out_of_range& error) {
-    throw Semantic_error(node->token, error.message);
+    String message = "cannot define '" + key + "'; identifier already defined";
+    throw Semantic_error(node->token, message);
   }
 }
 
 void Visitor::global_ind_def(Indirection* node, const Variant& value)
 {
+  Variant name = node->expression->evaluate(this);
+  String key;
   try {
-    Variant key = node->expression->evaluate(this);
-    environment.put_global(key.get_string(), value);
+    key = name.get_string();
+    environment.put_global(key, value);
   }
   catch (const Out_of_range& error) {
-    throw Semantic_error(node->token, error.message);
+    String message = "cannot find '" + key + "'; identifier undefined";
+    throw Semantic_error(node->token, message);
+  }
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 
 void Visitor::local_ind_def(Indirection* node, const Variant& value)
 {
+  Variant name = node->expression->evaluate(this);
+  String key;
   try {
-    Variant key = node->expression->evaluate(this);
-    environment.put_local(key.get_string(), value);
+    key = name.get_string();
+    environment.put_local(key, value);
   }
   catch (const Out_of_range& error) {
-    throw Semantic_error(node->token, error.message);
+    String message = "cannot find '" + key + "'; identifier undefined";
+    throw Semantic_error(node->token, message);
+  }
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
   }
 }
 

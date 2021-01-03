@@ -119,12 +119,19 @@ public:
 
   int get_int() const;
   bool get_bool() const;
-  const String& get_string() const;
-  const Vector<Variant>& get_array() const;
-  const Map<String, Variant>& get_dictionary() const;
-  const Macro& get_macro() const;
+  String& get_string() const;
+  Vector<Variant>& get_array() const;
+  Map<String, Variant>& get_dictionary() const;
+  Macro* get_macro() const;
 
   String to_string() const;
+};
+
+class Bad_variant_access : public Exception {
+public:
+  Bad_variant_access(const String& message);
+  ~Bad_variant_access();
+  const String message;
 };
 
 #endif // VARIANT_HPP

@@ -58,8 +58,8 @@ Storage::Storage(const Token& token)
 {
 }
 
-Macro::Macro(const Path& file_name, List<Identifier*>* parameters, Statement* statement)
-  : file_name(file_name), parameters(parameters), statement(statement)
+Macro::Macro(const Path& file_path, List<Identifier*>* parameters, Statement* statement)
+  : file_path(file_path), parameters(parameters), statement(statement)
 {
 }
 

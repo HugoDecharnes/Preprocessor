@@ -20,24 +20,26 @@
 class Context;
 
 #include "environment.hpp"
+#include "filesystem.hpp"
 #include "fstream.hpp"
 #include "lexer.hpp"
-#include "map.hpp"
 #include "parser.hpp"
 #include "thread.hpp"
 #include "tree.hpp"
 #include "utility.hpp"
+#include "vector.hpp"
 #include "visitor.hpp"
 
 class Context {
 public:
-  Context();
+  Context(Path& file_path);
   ~Context();
-  char* char_stream;
+  Path file_path;
+  char* input_stream;
   Statement* parse_tree;
 };
 
-void compile(uint argc, uint thread_count, uint thread_id, Map<String, Context>& context_list);
-void generate(uint argc, uint thread_count, uint thread_id, Map<String, Context>& context_list);
+void compile(uint argc, uint thread_count, uint thread_id, Vector<Context>& context_list);
+void generate(uint argc, uint thread_count, uint thread_id, Vector<Context>& context_list);
 
 #endif // CONTEXT_HPP

@@ -19,7 +19,11 @@
 
 #include <iostream>
 
+class Lexer;
+
+#include "context.hpp"
 #include "exception.hpp"
+#include "filesystem.hpp"
 #include "list.hpp"
 #include "map.hpp"
 #include "string.hpp"
@@ -28,7 +32,7 @@
 
 class Lexer {
 public:
-  Lexer(const char* char_stream);
+  Lexer(const char* input_stream);
   ~Lexer();
 
   Token get_token();

@@ -87,8 +87,9 @@ void Environment::pop_incl_scope()
 void Environment::report(const Semantic_error& error) const
 {
   String message = curr_file.string() + ":" + error.message + "\n";
-  for (const Pair<const String&, const Token&>& call : call_stack) {
-    message += "from " + call.first + ":" + std::to_string(call.second.line) + ":" + std::to_string(call.second.column) + "\n";
+  for (const Pair<const Path&, const Token&>& call : call_stack) {
+    message += "from " + call.first.string() + ":" + std::to_string(call.second.line) + ":" + std::to_string(call.second.column)
+      + "\n";
   }
   std::cerr << message.data();
 }

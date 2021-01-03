@@ -19,6 +19,9 @@
 
 #include <iostream>
 
+class Parser;
+
+#include "context.hpp"
 #include "exception.hpp"
 #include "filesystem.hpp"
 #include "lexer.hpp"
@@ -30,12 +33,13 @@
 
 class Parser {
 public:
-  Parser(const Path& file_name, Lexer& lexer);
+  Parser(Path& file_path, Lexer& lexer);
   ~Parser();
 
 private:
-  const Path& file_name;
+  Path& file_path;
   Lexer& lexer;
+
   Token curr_token;
   uint error_count;
 
@@ -90,7 +94,7 @@ private:
   bool match(Token::Type type);
 
   void synchronize();
-  void report(const Syntactic_error& error);
+  void report(const Preproc_error& error);
 };
 
 #endif // PARSER_HPP

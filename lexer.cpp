@@ -25,7 +25,7 @@
 
 ///////////////////////////////////////////////////////////// PUBLICS //////////////////////////////////////////////////////////////
 
-Lexer::Lexer(const char* char_stream)
+Lexer::Lexer(const char* input_stream)
 {
   keywords.insert(Pair<String, Token::Type>("define",   Token::Type::DEFINE));
   keywords.insert(Pair<String, Token::Type>("else",     Token::Type::ELSE));
@@ -45,7 +45,7 @@ Lexer::Lexer(const char* char_stream)
   builtins.insert(Pair<String, Token::Type>("size",   Token::Type::SIZE));
   builtins.insert(Pair<String, Token::Type>("true",   Token::Type::TRUE));
 
-  curr_char = char_stream;
+  curr_char = input_stream;
   curr_line = 1;
   curr_column = 1;
 
@@ -311,7 +311,9 @@ Token Lexer::preprocessor()
       return emit(Token::Type::TILDE);
 
     default:
-      return emit(Token::Type::INVALID);
+      Token token = emit(Token::Type::INVALID);
+      String message = "unexpected character";
+      throw Lexical_error(token, message);
     }
   }
 }

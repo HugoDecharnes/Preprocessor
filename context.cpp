@@ -16,99 +16,96 @@
 
 #include "context.hpp"
 
-Context::Context()
-  : char_stream(nullptr), parse_tree(nullptr)
+Context::Context(Path& file_path)
+  : file_path(file_path), input_stream(nullptr), parse_tree(nullptr)
 {
 }
 
 Context::~Context()
 {
   delete parse_tree;
-  delete[] char_stream;
+  delete[] input_stream;
 }
 
-void compile(uint argc, uint thread_count, uint thread_id, Map<String, Context>& context_list)
+void compile(uint argc, uint thread_count, uint thread_id, Vector<Context>& context_list)
 {
   for (uint index = thread_id; index < argc; index += thread_count) {
     try {
-      Pair<String, Context>& pair = context_list.at(index);
-      String& file_name = pair.first;
-      char*& char_stream = pair.second.char_stream;
-      Statement*& parse_tree = pair.second.parse_tree;
+      Context& context = context_list.at(index);
+      Path& file_path = context.file_path;
+      char*& input_stream = context.input_stream;
+      Statement*& parse_tree = context.parse_tree;
 
-      std::ifstream file_in(file_name.data());
+      Ifstream file_in(file_path);
       if (file_in.is_open()) {
         file_in.seekg(0, std::ios::end);
         size_t length = file_in.tellg();
         if (length == (size_t)(-1)) {
-          String message = "error: cannot read " + file_name;
+          String message = "error: cannot read " + file_path.string();
           throw Runtime_error(message);
         }
         file_in.seekg(0, std::ios::beg);
-        char_stream = new char[length + 1];
-        file_in.read(char_stream, length);
-        char_stream[length] = '\0';
+        input_stream = new char[length + 1];
+        file_in.read(input_stream, length);
+        input_stream[length] = '\0';
         file_in.close();
 
-        Lexer lexer((const char*)char_stream);
-        Parser parser(file_name, lexer);
-        String message = "info: compiling " + file_name + "\n";
+        Lexer lexer(input_stream);
+        Parser parser(file_path, lexer);
+        String message = "info: compiling " + file_path.string() + "\n";
         std::cout << message.data();
         parse_tree = parser.parse();
       }
       else {
-        String message = "error: cannot open " + file_name;
+        String message = "error: cannot open " + file_path.string();
         throw Runtime_error(message);
       }
     }
-    catch (const Runtime_error& error) {
-      String message = error.message + "\n";
-      std::cerr << message.data();
+    catch (const Exception& exception) {
+      std::cerr << exception.what() << std::endl;
     }
   }
 }
 
-void generate(uint argc, uint thread_count, uint thread_id, Map<String, Context>& context_list)
+void generate(uint argc, uint thread_count, uint thread_id, Vector<Context>& context_list)
 {
   for (uint index = thread_id; index < argc; index += thread_count) {
     try {
-      Pair<Path, Context>& pair = context_list.at(index);
-      Path& file_name = pair.first;
-      char*& char_stream = pair.second.char_stream;
-      Statement*& parse_tree = pair.second.parse_tree;
+      Context& context = context_list.at(index);
+      Path& file_path = context.file_path;
+      Statement*& parse_tree = context.parse_tree;
 
-      Path extension = file_name.extension();
+      Path extension = file_path.extension();
       if (extension == ".pp") {
-        Path out_file_name = file_name;
-        out_file_name.replace_extension();
+        Path out_file_path = file_path;
+        out_file_path.replace_extension();
 
         if (parse_tree != nullptr) {
-          Environment environment(file_name);
-          Visitor visitor(file_name, parse_tree, environment, context_list);
-          String message = "info: generating " + out_file_name.string() + "\n";
+          Environment environment(file_path);
+          Visitor visitor(file_path, parse_tree, environment, context_list);
+          String message = "info: generating " + out_file_path.string() + "\n";
           std::cout << message.data();
-          String out_string = visitor.visit();
+          String output_string = visitor.visit();
 
-          const char* out_stream = out_string.data();
-          Ofstream file_out(out_file_name);
+          const char* out_stream = output_string.data();
+          Ofstream file_out(out_file_path);
           if (file_out.is_open()) {
             file_out << out_stream;
             file_out.close();
           }
           else {
-            String message = "error: cannot create " + out_file_name.string();
+            String message = "error: cannot create " + out_file_path.string();
             throw Runtime_error(message);
           }
         }
         else {
-          String message = "info: skipping " + out_file_name.string() + " due to previous error(s)";
+          String message = "info: skipping " + out_file_path.string() + " due to previous error(s)";
           throw Runtime_error(message);
         }
       }
     }
-    catch (const Runtime_error& error) {
-      String message = error.message + "\n";
-      std::cerr << message.data();
+    catch (const Exception& exception) {
+      std::cerr << exception.what() << std::endl;
     }
   }
 }

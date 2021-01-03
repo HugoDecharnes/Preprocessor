@@ -33,15 +33,16 @@ class Visitor;
 
 class Visitor {
 public:
-  Visitor(const Path& file_name, Statement* parse_tree, Environment& environment, Map<String, Context>& context_list);
+  Visitor(Path& file_path, Statement* parse_tree, Environment& environment, Vector<Context>& context_list);
   ~Visitor();
 
 private:
-  const Path& file_name;
-  Statement* const parse_tree;
+  Path& file_path;
+  Statement* parse_tree;
   Environment& environment;
-  Map<String, Context>& context_list;
-  String out;
+  Vector<Context>& context_list;
+
+  String output_string;
   uint error_count;
 
 public:
