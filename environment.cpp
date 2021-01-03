@@ -62,7 +62,7 @@ void Environment::push_func_scope(const Path& file_name, const Token& token)
 
 void Environment::push_incl_scope(const Path& file_name, const Token& token)
 {
-  call_stack.push_front(Pair<const Path&, const Token&>(curr_file, token));
+  call_stack.push_front(Pair<const Path, const Token>(curr_file, token));
   curr_file = file_name;
 }
 
@@ -87,7 +87,7 @@ void Environment::pop_incl_scope()
 void Environment::report(const Semantic_error& error) const
 {
   String message = curr_file.string() + ":" + error.message + "\n";
-  for (const Pair<const Path&, const Token&>& call : call_stack) {
+  for (const Pair<const Path, const Token>& call : call_stack) {
     message += "from " + call.first.string() + ":" + std::to_string(call.second.line) + ":" + std::to_string(call.second.column)
       + "\n";
   }

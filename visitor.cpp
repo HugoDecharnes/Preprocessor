@@ -140,8 +140,8 @@ void Visitor::inclusion(Inclusion* node)
 {
   try {
     Variant value = node->expression->evaluate(this);
-    const String& incl_file_name = value.get_string();
-    const Path incl_file_path(incl_file_name);
+    String incl_file_name = value.get_string();
+    Path incl_file_path(incl_file_name);
     Statement* incl_parse_tree = nullptr;
     for (Context& context : context_list) {
       if (context.file_path == incl_file_path) {
@@ -150,21 +150,28 @@ void Visitor::inclusion(Inclusion* node)
       }
     }
     if (incl_parse_tree != nullptr) {
-      environment.push_incl_scope(incl_file_path, node->token);
-      incl_parse_tree->evaluate(this);
-      environment.pop_incl_scope();
+      try {
+        environment.push_incl_scope(incl_file_path, node->token);
+        Visitor visitor(incl_file_path, incl_parse_tree, environment, context_list);
+        visitor.visit();
+        environment.pop_incl_scope();
+      }
+      catch (const Runtime_error& exception) {
+        environment.pop_incl_scope();
+        String message = "failed to include '" + incl_file_name + "' due to previous error(s)";
+        throw Semantic_error(node->token, message);
+      }
     }
     else {
       String message = "cannot include '" + incl_file_name + "'; file does not exist";
       throw Semantic_error(node->token, message);
     }
   }
-  catch (const Semantic_error& error) {
+  catch (const Bad_variant_access& exception) {
+    Semantic_error error(node->token, exception.message);
     report(error);
   }
-  catch (const Exception& exception) {
-    String message = exception.what();
-    Semantic_error error(node->token, message);
+  catch (const Semantic_error& error) {
     report(error);
   }
 }

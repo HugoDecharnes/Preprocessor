@@ -51,7 +51,7 @@ private:
   Map<String, Variant> globals;
 
   Path curr_file;
-  List<Pair<const Path&, const Token&>> call_stack;
+  List<Pair<const Path, const Token>> call_stack;
 };
 
 #endif // ENVIRONMENT_HPP
