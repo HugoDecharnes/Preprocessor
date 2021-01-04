@@ -19,6 +19,7 @@
 
 class Visitor;
 
+#include <climits>
 #include "context.hpp"
 #include "environment.hpp"
 #include "exception.hpp"
@@ -85,6 +86,8 @@ public:
   Variant logical_not(Logical_not* node);
   Variant interpolate(Interpolate* node);
   Variant log2_bif(Log2_bif* node);
+  Variant max_bif(Max_bif* node);
+  Variant min_bif(Min_bif* node);
   Variant size_bif(Size_bif* node);
   Variant integer(Integer* node);
   Variant true_const(True_const* node);

@@ -73,9 +73,11 @@ private:
   Expression* array();
   Expression* dictionary();
 
-  Expression* log2_bif();
-  Expression* size_bif();
   Expression* eval_bif();
+  Expression* log2_bif();
+  Expression* max_bif();
+  Expression* min_bif();
+  Expression* size_bif();
 
   Expression* rhs_prefix();
   Expression* rhs_postfix();

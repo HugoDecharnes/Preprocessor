@@ -717,12 +717,16 @@ Expression* Parser::rhs_primary()
     return array();
   case Token::Type::LEFT_CURLY:
     return dictionary();
-  case Token::Type::LOG2:
-    return log2_bif();
-  case Token::Type::SIZE:
-    return size_bif();
   case Token::Type::EVAL:
     return eval_bif();
+  case Token::Type::LOG2:
+    return log2_bif();
+  case Token::Type::MAX:
+    return max_bif();
+  case Token::Type::MIN:
+    return min_bif();
+  case Token::Type::SIZE:
+    return size_bif();
   case Token::Type::INTEGER: {
     Token token = advance();
     return new Integer(token);
@@ -852,6 +856,22 @@ Expression* Parser::dictionary()
   }
 }
 
+Expression* Parser::eval_bif()
+{
+  Expression* expression = nullptr;
+  try {
+    Token token = advance();
+    consume(Token::Type::LEFT_PAREN);
+    expression = ternary();
+    consume(Token::Type::RIGHT_PAREN);
+    return new Interpolate(token, expression);
+  }
+  catch (const Preproc_error& error) {
+    delete expression;
+    throw error;
+  }
+}
+
 Expression* Parser::log2_bif()
 {
   Expression* expression = nullptr;
@@ -868,6 +888,56 @@ Expression* Parser::log2_bif()
   }
 }
 
+Expression* Parser::max_bif()
+{
+  List<Expression*>* expr_list = new List<Expression*>();
+  Expression* expression = nullptr;
+  try {
+    Token token = advance();
+    consume(Token::Type::LEFT_PAREN);
+    do {
+      expression = ternary();
+      expr_list->push_back(expression);
+      expression = nullptr;
+    } while (match(Token::Type::COMMA));
+    consume(Token::Type::RIGHT_PAREN);
+    return new Max_bif(token, expr_list);
+  }
+  catch (const Preproc_error& error) {
+    for (Expression*& expression : *expr_list) {
+      delete expression;
+    }
+    delete expr_list;
+    delete expression;
+    throw error;
+  }
+}
+
+Expression* Parser::min_bif()
+{
+  List<Expression*>* expr_list = new List<Expression*>();
+  Expression* expression = nullptr;
+  try {
+    Token token = advance();
+    consume(Token::Type::LEFT_PAREN);
+    do {
+      expression = ternary();
+      expr_list->push_back(expression);
+      expression = nullptr;
+    } while (match(Token::Type::COMMA));
+    consume(Token::Type::RIGHT_PAREN);
+    return new Min_bif(token, expr_list);
+  }
+  catch (const Preproc_error& error) {
+    for (Expression*& expression : *expr_list) {
+      delete expression;
+    }
+    delete expr_list;
+    delete expression;
+    throw error;
+  }
+}
+
 Expression* Parser::size_bif()
 {
   Expression* expression = nullptr;
@@ -877,22 +947,6 @@ Expression* Parser::size_bif()
     expression = ternary();
     consume(Token::Type::RIGHT_PAREN);
     return new Size_bif(token, expression);
-  }
-  catch (const Preproc_error& error) {
-    delete expression;
-    throw error;
-  }
-}
-
-Expression* Parser::eval_bif()
-{
-  Expression* expression = nullptr;
-  try {
-    Token token = advance();
-    consume(Token::Type::LEFT_PAREN);
-    expression = ternary();
-    consume(Token::Type::RIGHT_PAREN);
-    return new Interpolate(token, expression);
   }
   catch (const Preproc_error& error) {
     delete expression;

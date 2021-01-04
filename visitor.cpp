@@ -479,6 +479,42 @@ Variant Visitor::log2_bif(Log2_bif* node)
   }
 }
 
+Variant Visitor::max_bif(Max_bif* node)
+{
+  try {
+    Variant result = INT_MIN;
+    for (Expression*& expression : *node->expr_list) {
+      Variant value = expression->evaluate(this);
+      Variant comparison = value > result;
+      if (comparison.get_bool()) {
+        result = value;
+      }
+    }
+    return result;
+  }
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
+  }
+}
+
+Variant Visitor::min_bif(Min_bif* node)
+{
+  try {
+    Variant result = INT_MAX;
+    for (Expression*& expression : *node->expr_list) {
+      Variant value = expression->evaluate(this);
+      Variant comparison = value < result;
+      if (comparison.get_bool()) {
+        result = value;
+      }
+    }
+    return result;
+  }
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
+  }
+}
+
 Variant Visitor::size_bif(Size_bif* node)
 {
   try {

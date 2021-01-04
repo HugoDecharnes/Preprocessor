@@ -73,6 +73,8 @@ public:
     LET,
     LOG2,
     MACRO,
+    MAX,
+    MIN,
     SIZE,
     TRUE,
     LEFT_BRACK,

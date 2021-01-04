@@ -142,6 +142,10 @@ String to_string(Token::Type type)
     return "'log2'";
   case Token::Type::MACRO:
     return "'macro'";
+  case Token::Type::MAX:
+    return "'max'";
+  case Token::Type::MIN:
+    return "'min'";
   case Token::Type::SIZE:
     return "'size'";
   case Token::Type::TRUE:
