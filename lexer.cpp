@@ -33,6 +33,7 @@ Lexer::Lexer(const char* input_stream)
   keywords.insert(Pair<String, Token::Type>("endfor",   Token::Type::ENDFOR));
   keywords.insert(Pair<String, Token::Type>("endif",    Token::Type::ENDIF));
   keywords.insert(Pair<String, Token::Type>("endmacro", Token::Type::ENDMACRO));
+  keywords.insert(Pair<String, Token::Type>("eval",     Token::Type::EVAL));
   keywords.insert(Pair<String, Token::Type>("for",      Token::Type::FOR));
   keywords.insert(Pair<String, Token::Type>("if",       Token::Type::IF));
   keywords.insert(Pair<String, Token::Type>("include",  Token::Type::INCLUDE));
@@ -136,9 +137,6 @@ Token Lexer::preprocessor()
     case '\"':
       mode = Lexer::Mode::QUOTATION;
       return emit(Token::Type::DOUBLE_QUOTE);
-
-    case '$':
-      return emit(Token::Type::DOLLAR_SIGN);
 
     case '%':
       return emit(Token::Type::PERCENT);

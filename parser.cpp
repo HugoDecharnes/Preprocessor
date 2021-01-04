@@ -630,11 +630,6 @@ Expression* Parser::rhs_prefix()
     Expression* expression = rhs_prefix();
     return new Logical_not(token, expression);
   }
-  case Token::Type::DOLLAR_SIGN: {
-    Token token = advance();
-    Expression* expression = rhs_prefix();
-    return new Interpolate(token, expression);
-  }
   case Token::Type::PLUS: {
     Token token = advance();
     Expression* expression = rhs_prefix();
@@ -726,6 +721,8 @@ Expression* Parser::rhs_primary()
     return log2_bif();
   case Token::Type::SIZE:
     return size_bif();
+  case Token::Type::EVAL:
+    return eval_bif();
   case Token::Type::INTEGER: {
     Token token = advance();
     return new Integer(token);
@@ -880,6 +877,22 @@ Expression* Parser::size_bif()
     expression = ternary();
     consume(Token::Type::RIGHT_PAREN);
     return new Size_bif(token, expression);
+  }
+  catch (const Preproc_error& error) {
+    delete expression;
+    throw error;
+  }
+}
+
+Expression* Parser::eval_bif()
+{
+  Expression* expression = nullptr;
+  try {
+    Token token = advance();
+    consume(Token::Type::LEFT_PAREN);
+    expression = ternary();
+    consume(Token::Type::RIGHT_PAREN);
+    return new Interpolate(token, expression);
   }
   catch (const Preproc_error& error) {
     delete expression;

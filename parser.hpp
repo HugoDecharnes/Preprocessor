@@ -75,6 +75,7 @@ private:
 
   Expression* log2_bif();
   Expression* size_bif();
+  Expression* eval_bif();
 
   Expression* rhs_prefix();
   Expression* rhs_postfix();
