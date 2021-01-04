@@ -1069,7 +1069,7 @@ void Parser::synchronize()
 
 void Parser::report(const Preproc_error& error)
 {
-  String message = file_path.string() + error.message + "\n";
+  String message = file_path.string() + ":" + error.message + "\n";
   std::cerr << message.data();
   error_count++;
 }
