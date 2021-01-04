@@ -222,8 +222,7 @@ Statement* Parser::macro_def()
 Statement* Parser::selection()
 {
   Token token = advance();
-  List<Pair<Expression*, Statement*>>* alternatives
-    = new List<Pair<Expression*, Statement*>>();
+  List<Pair<Expression*, Statement*>>* alternatives = new List<Pair<Expression*, Statement*>>();
   {
     Expression* expression = nullptr;
     try {
@@ -688,9 +687,8 @@ Expression* Parser::rhs_postfix()
 // This macro parses the argument list after the opening parenthese, and returns that expression list enclosed in between.
 List<Expression*>* Parser::macro_call()
 {
-  List<Expression*>* expr_list = nullptr;
+  List<Expression*>* expr_list = new List<Expression*>();
   try {
-    expr_list = new List<Expression*>();
     if (!match(Token::Type::RIGHT_PAREN)) {
       do {
         Expression* expression = ternary();
@@ -701,6 +699,9 @@ List<Expression*>* Parser::macro_call()
     return expr_list;
   }
   catch (const Preproc_error& error) {
+    for (Expression*& expression : *expr_list) {
+      delete expression;
+    }
     delete expr_list;
     throw error;
   }
@@ -794,6 +795,9 @@ Expression* Parser::quotation()
     }
   }
   catch (const Preproc_error& error) {
+    for (Expression*& expression : *expr_list) {
+      delete expression;
+    }
     delete expr_list;
     throw error;
   }
@@ -823,6 +827,10 @@ Expression* Parser::array()
   catch (const Preproc_error& error) {
     delete left_expr;
     delete right_expr;
+    for (Pair<Expression*, Expression*>& pair : *expr_list) {
+      delete pair.first;
+      delete pair.second;
+    }
     delete expr_list;
     throw error;
   }
@@ -851,6 +859,10 @@ Expression* Parser::dictionary()
   catch (const Preproc_error& error) {
     delete left_expr;
     delete right_expr;
+    for (Pair<Expression*, Expression*>& pair : *expr_list) {
+      delete pair.first;
+      delete pair.second;
+    }
     delete expr_list;
     throw error;
   }
