@@ -141,7 +141,8 @@ void Visitor::inclusion(Inclusion* node)
   try {
     Variant value = node->expression->evaluate(this);
     String incl_file_name = value.get_string();
-    Path incl_file_path(incl_file_name);
+    Path incl_file_path(file_path.parent_path());
+    incl_file_path /= incl_file_name;
     Statement* incl_parse_tree = nullptr;
     for (Context& context : context_list) {
       if (context.file_path == incl_file_path) {
