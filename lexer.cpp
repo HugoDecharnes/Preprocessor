@@ -33,13 +33,13 @@ Lexer::Lexer(const char* input_stream)
   keywords.insert(Pair<String, Token::Type>("endfor",   Token::Type::ENDFOR));
   keywords.insert(Pair<String, Token::Type>("endif",    Token::Type::ENDIF));
   keywords.insert(Pair<String, Token::Type>("endmacro", Token::Type::ENDMACRO));
-  keywords.insert(Pair<String, Token::Type>("eval",     Token::Type::EVAL));
   keywords.insert(Pair<String, Token::Type>("for",      Token::Type::FOR));
   keywords.insert(Pair<String, Token::Type>("if",       Token::Type::IF));
   keywords.insert(Pair<String, Token::Type>("include",  Token::Type::INCLUDE));
   keywords.insert(Pair<String, Token::Type>("let",      Token::Type::LET));
   keywords.insert(Pair<String, Token::Type>("macro",    Token::Type::MACRO));
 
+  builtins.insert(Pair<String, Token::Type>("eval",   Token::Type::EVAL));
   builtins.insert(Pair<String, Token::Type>("false",  Token::Type::FALSE));
   builtins.insert(Pair<String, Token::Type>("inside", Token::Type::INSIDE));
   builtins.insert(Pair<String, Token::Type>("log2",   Token::Type::LOG2));
