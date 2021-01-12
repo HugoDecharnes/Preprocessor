@@ -29,12 +29,20 @@ Environment::~Environment()
 
 void Environment::put_global(const String& key, const Variant& value)
 {
-  globals.insert(Pair<String, Variant>(key, value));
+  Pair<Map<String, Variant>::iterator, bool> ret;
+  ret = globals.insert(Pair<String, Variant>(key, value));
+  if (ret.second == false) {
+    throw Out_of_range("out_of_range");
+  }
 }
 
 void Environment::put_local(const String& key, const Variant& value)
 {
-  locals.front().insert(Pair<String, Variant>(key, value));
+  Pair<Map<String, Variant>::iterator, bool> ret;
+  ret = locals.front().insert(Pair<String, Variant>(key, value));
+  if (ret.second == false) {
+    throw Out_of_range("out_of_range");
+  }
 }
 
 Variant& Environment::get(const String& key)
