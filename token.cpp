@@ -56,6 +56,8 @@ String to_string(Token::Type type)
     return "'!='";
   case Token::Type::DOUBLE_QUOTE:
     return "'\"'";
+  case Token::Type::DOLLAR:
+    return "'$'";
   case Token::Type::PERCENT:
     return "'%'";
   case Token::Type::AMPERS:
@@ -124,8 +126,6 @@ String to_string(Token::Type type)
     return "'endif'";
   case Token::Type::ENDMACRO:
     return "'endmacro'";
-  case Token::Type::EVAL:
-    return "'eval'";
   case Token::Type::FALSE:
     return "'false'";
   case Token::Type::FOR:

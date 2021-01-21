@@ -39,7 +39,6 @@ Lexer::Lexer(const char* input_stream)
   keywords.insert(Pair<String, Token::Type>("let",      Token::Type::LET));
   keywords.insert(Pair<String, Token::Type>("macro",    Token::Type::MACRO));
 
-  builtins.insert(Pair<String, Token::Type>("eval",   Token::Type::EVAL));
   builtins.insert(Pair<String, Token::Type>("false",  Token::Type::FALSE));
   builtins.insert(Pair<String, Token::Type>("inside", Token::Type::INSIDE));
   builtins.insert(Pair<String, Token::Type>("log2",   Token::Type::LOG2));
@@ -139,6 +138,9 @@ Token Lexer::preprocessor()
     case '\"':
       mode = Lexer::Mode::QUOTATION;
       return emit(Token::Type::DOUBLE_QUOTE);
+    
+    case '$':
+      return emit(Token::Type::DOLLAR);
 
     case '%':
       return emit(Token::Type::PERCENT);

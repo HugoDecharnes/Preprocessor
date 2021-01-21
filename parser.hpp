@@ -73,7 +73,6 @@ private:
   Expression* array();
   Expression* dictionary();
 
-  Expression* eval_bif();
   Expression* log2_bif();
   Expression* max_bif();
   Expression* min_bif();
