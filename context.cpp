@@ -76,7 +76,7 @@ void generate(uint argc, uint thread_count, uint thread_id, Vector<Context>& con
       Statement*& parse_tree = context.parse_tree;
 
       Path extension = file_path.extension();
-      if (extension == ".pp") {
+      if (extension == ".src") {
         Path out_file_path = file_path;
         out_file_path.replace_extension();
 

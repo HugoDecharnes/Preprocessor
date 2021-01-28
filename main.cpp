@@ -28,12 +28,12 @@ int main(int argc, char* argv[])
   for (uint arg = 1; arg < (uint)argc; arg++) {
     Path file_name = argv[arg];
     Path file_extension = file_name.extension();
-    if (file_extension == ".pp" || file_extension == ".pph") {
+    if (file_extension == ".src" || file_extension == ".dat") {
       Context context(file_name);
       context_list.push_back(context);
     }
     else {
-      String message = "warning: skipping " + file_name.string() + " due to file extension; use '.pp' for source files and '.pph' for headers\n";
+      String message = "warning: skipping " + file_name.string() + " due to file extension; use '.src' for source files and '.dat' for headers\n";
       std::cout << message.data();
     }
   }
