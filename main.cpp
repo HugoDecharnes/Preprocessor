@@ -1,4 +1,4 @@
-// Copyright (C) 2020, Hugo Decharnes, Bryan Aggoun. All rights reserved.
+// Copyright (C) 2020-2021, Hugo Decharnes. All rights reserved.
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -21,7 +21,7 @@
 
 int main(int argc, char* argv[])
 {
-  String message = "Preprocessor v1.0.0.\n";
+  String message = "Preprocessor v1.0.0. Copyright (C) 2020-2021, Hugo Decharnes. All rights reserved.\n";
   std::cout << message.data();
 
   Vector<Context> context_list;
