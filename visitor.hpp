@@ -44,7 +44,6 @@ private:
   Vector<Context>& context_list;
 
   String output_string;
-  uint error_count;
 
 public:
   String visit();

@@ -42,6 +42,10 @@ Statement* Parser::parse()
   }
   else {
     delete statement;
+    if (error_count >= 5) {
+      String message = file_path.string() + ": " + std::to_string(error_count - 5) + " more error(s)\n";
+      std::cerr << message.data();
+    }
     String message = file_path.string() + ": compilation failed due to " + std::to_string(error_count) + " error(s)";
     throw Runtime_error(message);
   }
@@ -1058,7 +1062,9 @@ void Parser::synchronize()
 
 void Parser::report(const Preproc_error& error)
 {
-  String message = file_path.string() + ":" + error.message + "\n";
-  std::cerr << message.data();
+  if (error_count < 5) {
+    String message = file_path.string() + ":" + error.message + "\n";
+    std::cerr << message.data();
+  }
   error_count++;
 }

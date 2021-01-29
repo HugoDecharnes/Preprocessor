@@ -17,7 +17,7 @@
 #include "environment.hpp"
 
 Environment::Environment(const Path& file_name)
-  : curr_file(file_name)
+  : curr_file(file_name), error_count(0)
 {
   locals.push_front(Map<String, Variant>());
   push_block_scope();
@@ -92,12 +92,25 @@ void Environment::pop_incl_scope()
   call_stack.pop_front();
 }
 
-void Environment::report(const Semantic_error& error) const
+void Environment::report(const Semantic_error& error)
 {
-  String message = curr_file.string() + ":" + error.message + "\n";
-  for (const Pair<const Path, const Token>& call : call_stack) {
-    message += "from " + call.first.string() + ":" + std::to_string(call.second.line) + ":" + std::to_string(call.second.column)
-      + "\n";
+  if (error_count < 5) {
+    String message = curr_file.string() + ":" + error.message + "\n";
+    for (const Pair<const Path, const Token>& call : call_stack) {
+      message += "from " + call.first.string() + ":" + std::to_string(call.second.line) + ":" + std::to_string(call.second.column)
+        + "\n";
+    }
+    std::cerr << message.data();
   }
-  std::cerr << message.data();
+  error_count++;
+}
+
+uint Environment::get_error_count() const
+{
+  return error_count;
+}
+
+uint Environment::get_call_depth() const
+{
+  return call_stack.size();
 }

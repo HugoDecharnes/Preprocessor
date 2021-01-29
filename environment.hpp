@@ -44,11 +44,15 @@ public:
   void pop_func_scope();
   void pop_incl_scope();
 
-  void report(const Semantic_error& error) const;
+  void report(const Semantic_error& error);
+  uint get_error_count() const;
+  uint get_call_depth() const;
 
 private:
   List<Map<String, Variant>> locals;
   Map<String, Variant> globals;
+
+  uint error_count;
 
   Path curr_file;
   List<Pair<const Path, const Token>> call_stack;

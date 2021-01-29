@@ -19,7 +19,7 @@
 /////////////////////////////////////////////////////////////// RUN ////////////////////////////////////////////////////////////////
 
 Visitor::Visitor(Path& file_path, Statement* parse_tree, Environment& environment, Vector<Context>& context_list)
-  : file_path(file_path), parse_tree(parse_tree), environment(environment), context_list(context_list), error_count(0)
+  : file_path(file_path), parse_tree(parse_tree), environment(environment), context_list(context_list)
 {
 }
 
@@ -30,7 +30,12 @@ Visitor::~Visitor()
 String Visitor::visit()
 {
   parse_tree->evaluate(this);
+  uint error_count = environment.get_error_count();
   if (error_count != 0) {
+    if (error_count >= 5 && environment.get_call_depth() != 1) {
+      String message = file_path.string() + ": " + std::to_string(error_count - 5) + " more error(s)\n";
+      std::cerr << message.data();
+    }
     String message = file_path.string() + ": generation failed due to " + std::to_string(error_count) + " error(s)";
     throw Runtime_error(message);
   }
@@ -829,5 +834,4 @@ void Visitor::local_ind_def(Indirection* node, const Variant& value)
 void Visitor::report(const Semantic_error& error)
 {
   environment.report(error);
-  error_count++;
 }
