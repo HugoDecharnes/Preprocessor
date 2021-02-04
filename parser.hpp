@@ -74,6 +74,7 @@ private:
   Expression* dictionary();
 
   Expression* log2_bif();
+  Expression* clog2_bif();
   Expression* max_bif();
   Expression* min_bif();
   Expression* size_bif();

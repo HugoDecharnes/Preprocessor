@@ -248,6 +248,11 @@ Log2_bif::Log2_bif(const Token& token, Expression* expression)
 {
 }
 
+Clog2_bif::Clog2_bif(const Token& token, Expression* expression)
+  : Unary_expr(token, expression)
+{
+}
+
 Max_bif::Max_bif(const Token& token, List<Expression*>* expr_list)
   : Expression(token), expr_list(expr_list)
 {
@@ -540,6 +545,10 @@ Log2_bif::~Log2_bif()
 {
 }
 
+Clog2_bif::~Clog2_bif()
+{
+}
+
 Max_bif::~Max_bif()
 {
   for (Expression*& expression : *expr_list) {
@@ -810,6 +819,11 @@ Variant Interpolate::evaluate(Visitor* visitor)
 Variant Log2_bif::evaluate(Visitor* visitor)
 {
   return visitor->log2_bif(this);
+}
+
+Variant Clog2_bif::evaluate(Visitor* visitor)
+{
+  return visitor->clog2_bif(this);
 }
 
 Variant Max_bif::evaluate(Visitor* visitor)

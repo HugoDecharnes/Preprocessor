@@ -729,6 +729,8 @@ Expression* Parser::rhs_primary()
     return dictionary();
   case Token::Type::LOG2:
     return log2_bif();
+  case Token::Type::CLOG2:
+    return clog2_bif();
   case Token::Type::MAX:
     return max_bif();
   case Token::Type::MIN:
@@ -884,6 +886,22 @@ Expression* Parser::log2_bif()
     expression = ternary();
     consume(Token::Type::RIGHT_PAREN);
     return new Log2_bif(token, expression);
+  }
+  catch (const Preproc_error& error) {
+    delete expression;
+    throw error;
+  }
+}
+
+Expression* Parser::clog2_bif()
+{
+  Expression* expression = nullptr;
+  try {
+    Token token = advance();
+    consume(Token::Type::LEFT_PAREN);
+    expression = ternary();
+    consume(Token::Type::RIGHT_PAREN);
+    return new Clog2_bif(token, expression);
   }
   catch (const Preproc_error& error) {
     delete expression;

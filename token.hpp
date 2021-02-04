@@ -72,6 +72,7 @@ public:
     INSIDE,
     LET,
     LOG2,
+    CLOG2,
     MACRO,
     MAX,
     MIN,

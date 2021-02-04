@@ -52,6 +52,7 @@ class Bitwise_not;
 class Logical_not;
 class Interpolate;
 class Log2_bif;
+class Clog2_bif;
 class Max_bif;
 class Min_bif;
 class Size_bif;
@@ -337,6 +338,13 @@ class Log2_bif : public Unary_expr {
 public:
   Log2_bif(const Token& token, Expression* expression);
   ~Log2_bif();
+  Variant evaluate(Visitor* visitor) override;
+};
+
+class Clog2_bif : public Unary_expr {
+public:
+  Clog2_bif(const Token& token, Expression* expression);
+  ~Clog2_bif();
   Variant evaluate(Visitor* visitor) override;
 };
 

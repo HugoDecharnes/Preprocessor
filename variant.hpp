@@ -116,6 +116,7 @@ public:
 
   Variant pow(const Variant& lhs);
   Variant log2();
+  Variant clog2();
 
   int get_int() const;
   bool get_bool() const;

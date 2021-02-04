@@ -140,6 +140,8 @@ String to_string(Token::Type type)
     return "'let'";
   case Token::Type::LOG2:
     return "'log2'";
+  case Token::Type::CLOG2:
+    return "'clog2'";
   case Token::Type::MACRO:
     return "'macro'";
   case Token::Type::MAX:

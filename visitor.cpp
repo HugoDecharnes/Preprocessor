@@ -485,6 +485,17 @@ Variant Visitor::log2_bif(Log2_bif* node)
   }
 }
 
+Variant Visitor::clog2_bif(Clog2_bif* node)
+{
+  try {
+    Variant value = node->expression->evaluate(this);
+    return value.clog2();
+  }
+  catch (const Bad_variant_access& exception) {
+    throw Semantic_error(node->token, exception.message);
+  }
+}
+
 Variant Visitor::max_bif(Max_bif* node)
 {
   try {

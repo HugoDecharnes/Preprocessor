@@ -885,6 +885,15 @@ Variant Variant::log2()
   }
 }
 
+Variant Variant::clog2()
+{
+  Variant result = this->log2();
+  if (data.INTEGER & (data.INTEGER - 1) != 0) {
+    result.data.INTEGER++;
+  }
+  return result;
+}
+
 int Variant::get_int() const
 {
   if (type == Variant::Type::INTEGER) {

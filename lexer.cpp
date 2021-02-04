@@ -42,6 +42,7 @@ Lexer::Lexer(const char* input_stream)
   builtins.insert(Pair<String, Token::Type>("false",  Token::Type::FALSE));
   builtins.insert(Pair<String, Token::Type>("inside", Token::Type::INSIDE));
   builtins.insert(Pair<String, Token::Type>("log2",   Token::Type::LOG2));
+  builtins.insert(Pair<String, Token::Type>("clog2",  Token::Type::CLOG2));
   builtins.insert(Pair<String, Token::Type>("max",    Token::Type::MAX));
   builtins.insert(Pair<String, Token::Type>("min",    Token::Type::MIN));
   builtins.insert(Pair<String, Token::Type>("size",   Token::Type::SIZE));

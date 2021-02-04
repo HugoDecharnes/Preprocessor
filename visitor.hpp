@@ -85,6 +85,7 @@ public:
   Variant logical_not(Logical_not* node);
   Variant interpolate(Interpolate* node);
   Variant log2_bif(Log2_bif* node);
+  Variant clog2_bif(Clog2_bif* node);
   Variant max_bif(Max_bif* node);
   Variant min_bif(Min_bif* node);
   Variant size_bif(Size_bif* node);
