@@ -148,6 +148,8 @@ String to_string(Token::Type type)
     return "'max'";
   case Token::Type::MIN:
     return "'min'";
+  case Token::Type::PRINT:
+    return "'print'";
   case Token::Type::SIZE:
     return "'size'";
   case Token::Type::TRUE:

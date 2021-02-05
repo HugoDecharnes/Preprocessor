@@ -54,6 +54,7 @@ public:
   void local_var_def(Local_var_def* node);
   void global_var_def(Global_var_def* node);
   void macro_def(Macro_def* node);
+  void printing(Printing* node);
   void selection(Selection* node);
   void iteration(Iteration* node);
   void inclusion(Inclusion* node);

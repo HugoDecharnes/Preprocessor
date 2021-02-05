@@ -75,6 +75,7 @@ class Local_var_def;
 class Global_var_def;
 class Macro;
 class Macro_def;
+class Printing;
 class Selection;
 class Iteration;
 class Inclusion;
@@ -529,6 +530,14 @@ public:
   ~Macro_def();
   Storage* const storage;
   Macro* const macro;
+  void evaluate(Visitor* visitor) override;
+};
+
+class Printing : public Directive {
+public:
+  Printing(const Token& token, Expression* expression);
+  ~Printing();
+  Expression* const expression;
   void evaluate(Visitor* visitor) override;
 };
 

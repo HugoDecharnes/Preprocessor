@@ -92,6 +92,11 @@ Statement* Parser::compound()
         stmt_list->push_back(statement);
         continue;
       }
+      case Token::Type::PRINT: {
+        Statement* statement = printing();
+        stmt_list->push_back(statement);
+        continue;
+      }
       case Token::Type::ELSE:
       case Token::Type::ELSEIF:
       case Token::Type::ENDFOR:
@@ -221,6 +226,24 @@ Statement* Parser::macro_def()
   }
   Macro* macro = new Macro(file_path, parameters, statement);
   return new Macro_def(token, storage, macro);
+}
+
+Statement* Parser::printing()
+{
+  Token token = advance();
+  Expression* expression = nullptr;
+  try {
+    consume(Token::Type::LEFT_PAREN);
+    expression = ternary();
+    consume(Token::Type::RIGHT_PAREN);
+    consume(Token::Type::NEWLINE);
+  }
+  catch (const Preproc_error& error) {
+    report(error);
+    synchronize();
+  }
+  Printing* printing = new Printing(token, expression);
+  return printing;
 }
 
 Statement* Parser::selection()

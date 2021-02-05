@@ -103,6 +103,18 @@ void Visitor::macro_def(Macro_def* node)
   }
 }
 
+void Visitor::printing(Printing* node)
+{
+  try {
+    Variant value = node->expression->evaluate(this);
+    String message = value.get_string() + "\n";
+    std::cout << message;
+  }
+  catch (const Semantic_error& error) {
+    report(error);
+  }
+}
+
 void Visitor::selection(Selection* node)
 {
   for (Pair<Expression*, Statement*>& alternative : *node->alternatives) {

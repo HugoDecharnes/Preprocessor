@@ -76,6 +76,7 @@ public:
     MACRO,
     MAX,
     MIN,
+    PRINT,
     SIZE,
     TRUE,
     LEFT_BRACK,

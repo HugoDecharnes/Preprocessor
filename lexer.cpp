@@ -38,6 +38,7 @@ Lexer::Lexer(const char* input_stream)
   keywords.insert(Pair<String, Token::Type>("include",  Token::Type::INCLUDE));
   keywords.insert(Pair<String, Token::Type>("let",      Token::Type::LET));
   keywords.insert(Pair<String, Token::Type>("macro",    Token::Type::MACRO));
+  keywords.insert(Pair<String, Token::Type>("print",    Token::Type::PRINT));
 
   builtins.insert(Pair<String, Token::Type>("false",  Token::Type::FALSE));
   builtins.insert(Pair<String, Token::Type>("inside", Token::Type::INSIDE));

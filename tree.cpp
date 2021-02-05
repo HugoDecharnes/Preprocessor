@@ -95,6 +95,11 @@ Macro_def::Macro_def(const Token& token, Storage* storage, Macro* macro)
 {
 }
 
+Printing::Printing(const Token& token, Expression* expression)
+  : Directive(token), expression(expression)
+{
+}
+
 Selection::Selection(const Token& token, List<Pair<Expression*, Statement*>>* alternatives)
   : Directive(token), alternatives(alternatives)
 {
@@ -411,6 +416,11 @@ Macro_def::~Macro_def()
   delete macro;
 }
 
+Printing::~Printing()
+{
+  delete expression;
+}
+
 Selection::~Selection()
 {
   for (Pair<Expression*, Statement*>& alternative : *alternatives) {
@@ -667,6 +677,11 @@ void Global_var_def::evaluate(Visitor* visitor)
 void Macro_def::evaluate(Visitor* visitor)
 {
   visitor->macro_def(this);
+}
+
+void Printing::evaluate(Visitor* visitor)
+{
+  visitor->printing(this);
 }
 
 void Selection::evaluate(Visitor* visitor)
