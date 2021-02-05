@@ -121,7 +121,7 @@ void Visitor::printing(Printing* node)
 {
   try {
     Variant value = node->expression->evaluate(this);
-    String message = value.get_string() + "\n";
+    String message = value.to_string() + "\n";
     std::cout << message;
   }
   catch (const Semantic_error& error) {
