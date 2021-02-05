@@ -888,7 +888,7 @@ Variant Variant::log2()
 Variant Variant::clog2()
 {
   Variant result = this->log2();
-  if (data.INTEGER & (data.INTEGER - 1) != 0) {
+  if ((data.INTEGER & (data.INTEGER - 1)) != 0) {
     result.data.INTEGER++;
   }
   return result;
