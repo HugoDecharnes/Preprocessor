@@ -48,6 +48,7 @@ private:
 public:
   String visit();
 
+  void assertion(Assertion* node);
   void compound(Compound* node);
   void plain_text(Plain_text* node);
   void expr_stmt(Expr_stmt* node);

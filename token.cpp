@@ -114,6 +114,8 @@ String to_string(Token::Type type)
     return "plain text";
   case Token::Type::IDENTIFIER:
     return "identifier";
+  case Token::Type::ASSERT:
+    return "'assert'";
   case Token::Type::DEFINE:
     return "'define'";
   case Token::Type::ELSE:

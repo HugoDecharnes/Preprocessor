@@ -62,6 +62,11 @@ Statement* Parser::compound()
       case Token::Type::NEWLINE:
         advance();
         continue;
+      case Token::Type::ASSERT: {
+        Statement* statement = assertion();
+        stmt_list->push_back(statement);
+        continue;
+      }
       case Token::Type::DEFINE: {
         Statement* statement = global_var_def();
         stmt_list->push_back(statement);
@@ -172,6 +177,24 @@ Statement* Parser::local_var_def()
     synchronize();
   }
   return new Local_var_def(token, storage, expression);
+}
+
+Statement* Parser::assertion()
+{
+  Token token = advance();
+  Expression* expression = nullptr;
+  try {
+    consume(Token::Type::LEFT_PAREN);
+    expression = ternary();
+    consume(Token::Type::RIGHT_PAREN);
+    consume(Token::Type::NEWLINE);
+  }
+  catch (const Preproc_error& error) {
+    report(error);
+    synchronize();
+  }
+  Assertion* assertion = new Assertion(token, expression);
+  return assertion;
 }
 
 Statement* Parser::global_var_def()

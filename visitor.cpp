@@ -44,6 +44,20 @@ String Visitor::visit()
 
 //////////////////////////////////////////////////////////// STATEMENTS ////////////////////////////////////////////////////////////
 
+void Visitor::assertion(Assertion* node)
+{
+  try {
+    bool value = node->expression->evaluate(this).get_bool();
+    if (!value) {
+      String message = "assert failed";
+      throw Semantic_error(node->token, message);
+    }
+  }
+  catch (const Semantic_error& error) {
+    report(error);
+  }
+}
+
 void Visitor::compound(Compound* node)
 {
   for (Statement*& statement : *node->stmt_list) {

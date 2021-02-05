@@ -70,6 +70,7 @@ class Identifier;
 class Indirection;
 class Compound;
 class Plain_text;
+class Assertion;
 class Expr_stmt;
 class Local_var_def;
 class Global_var_def;
@@ -486,6 +487,14 @@ public:
   Plain_text(const Token& token);
   ~Plain_text();
   Token token;
+  void evaluate(Visitor* visitor) override;
+};
+
+class Assertion : public Directive {
+public:
+  Assertion(const Token& token, Expression* expression);
+  ~Assertion();
+  Expression* const expression;
   void evaluate(Visitor* visitor) override;
 };
 

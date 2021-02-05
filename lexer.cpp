@@ -27,6 +27,7 @@
 
 Lexer::Lexer(const char* input_stream)
 {
+  keywords.insert(Pair<String, Token::Type>("assert",   Token::Type::ASSERT));
   keywords.insert(Pair<String, Token::Type>("define",   Token::Type::DEFINE));
   keywords.insert(Pair<String, Token::Type>("else",     Token::Type::ELSE));
   keywords.insert(Pair<String, Token::Type>("elseif",   Token::Type::ELSEIF));

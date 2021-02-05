@@ -50,6 +50,7 @@ private:
   Statement* compound();
   Statement* plain_text();
   Statement* expr_stmt();
+  Statement* assertion();
   Statement* local_var_def();
   Statement* global_var_def();
   Statement* macro_def();

@@ -59,6 +59,7 @@ public:
     AT_SIGN,
     PLAIN_TEXT,
     IDENTIFIER,
+    ASSERT,
     DEFINE,
     ELSE,
     ELSEIF,

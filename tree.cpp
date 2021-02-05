@@ -75,6 +75,11 @@ Plain_text::Plain_text(const Token& token)
 {
 }
 
+Assertion::Assertion(const Token& token, Expression* expression)
+  : Directive(token), expression(expression)
+{
+}
+
 Expr_stmt::Expr_stmt(const Token& token, Expression* expression)
   : Directive(token), expression(expression)
 {
@@ -393,6 +398,11 @@ Plain_text::~Plain_text()
 {
 }
 
+Assertion::~Assertion()
+{
+  delete expression;
+}
+
 Expr_stmt::~Expr_stmt()
 {
   delete expression;
@@ -657,6 +667,11 @@ void Compound::evaluate(Visitor* visitor)
 void Plain_text::evaluate(Visitor* visitor)
 {
   visitor->plain_text(this);
+}
+
+void Assertion::evaluate(Visitor* visitor)
+{
+  visitor->assertion(this);
 }
 
 void Expr_stmt::evaluate(Visitor* visitor)
