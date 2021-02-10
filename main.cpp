@@ -21,9 +21,7 @@
 
 int main(int argc, char* argv[])
 {
-  String message = "Preprocessor version 1.0.0 (build date: ";
-  message += __DATE__;
-  message += ").\n";
+  String message = "Preprocessor v1.0.0\n";
   std::cout << message.data();
 
   Vector<Context> context_list;
