@@ -21,12 +21,12 @@
 
 int main(int argc, char* argv[])
 {
-  String message = "Preprocessor v1.0.0\n";
+  String message = "Preprocessor v1.0.1\n";
   std::cout << message.data();
 
   Vector<Context> context_list;
   for (uint arg = 1; arg < (uint)argc; arg++) {
-    Path file_name = argv[arg];
+    Path file_name = std::filesystem::absolute(argv[arg]);
     Path file_extension = file_name.extension();
     if (file_extension == ".src" || file_extension == ".dat") {
       Context context(file_name);
