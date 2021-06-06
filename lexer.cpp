@@ -1,4 +1,4 @@
-// Copyright (C) 2020, Hugo Decharnes, Bryan Aggoun. All rights reserved.
+// Copyright (C) 2020-2021, Hugo Decharnes. All rights reserved.
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -25,31 +25,32 @@
 
 ///////////////////////////////////////////////////////////// PUBLICS //////////////////////////////////////////////////////////////
 
-Lexer::Lexer(const char* char_stream)
+Lexer::Lexer(const char* input_stream)
 {
-  keywords.insert(String("begin"),    Token::Type::BEGIN);
-  keywords.insert(String("block"),    Token::Type::BLOCK);
-  keywords.insert(String("else"),     Token::Type::ELSE);
-  keywords.insert(String("elseif"),   Token::Type::ELSEIF);
-  keywords.insert(String("end"),      Token::Type::END);
-  keywords.insert(String("endblock"), Token::Type::ENDBLOCK);
-  keywords.insert(String("endfor"),   Token::Type::ENDFOR);
-  keywords.insert(String("endif"),    Token::Type::ENDIF);
-  keywords.insert(String("for"),      Token::Type::FOR);
-  keywords.insert(String("global"),   Token::Type::GLOBAL);
-  keywords.insert(String("if"),       Token::Type::IF);
-  keywords.insert(String("include"),  Token::Type::INCLUDE);
-  keywords.insert(String("local"),    Token::Type::LOCAL);
-  keywords.insert(String("mut"),      Token::Type::MUT);
-  keywords.insert(String("return"),   Token::Type::RETURN);
+  keywords.insert(Pair<String, Token::Type>("assert",   Token::Type::ASSERT));
+  keywords.insert(Pair<String, Token::Type>("define",   Token::Type::DEFINE));
+  keywords.insert(Pair<String, Token::Type>("else",     Token::Type::ELSE));
+  keywords.insert(Pair<String, Token::Type>("elseif",   Token::Type::ELSEIF));
+  keywords.insert(Pair<String, Token::Type>("endfor",   Token::Type::ENDFOR));
+  keywords.insert(Pair<String, Token::Type>("endif",    Token::Type::ENDIF));
+  keywords.insert(Pair<String, Token::Type>("endmacro", Token::Type::ENDMACRO));
+  keywords.insert(Pair<String, Token::Type>("for",      Token::Type::FOR));
+  keywords.insert(Pair<String, Token::Type>("if",       Token::Type::IF));
+  keywords.insert(Pair<String, Token::Type>("include",  Token::Type::INCLUDE));
+  keywords.insert(Pair<String, Token::Type>("let",      Token::Type::LET));
+  keywords.insert(Pair<String, Token::Type>("macro",    Token::Type::MACRO));
+  keywords.insert(Pair<String, Token::Type>("print",    Token::Type::PRINT));
 
-  builtins.insert(String("false"),  Token::Type::FALSE);
-  builtins.insert(String("inside"), Token::Type::INSIDE);
-  builtins.insert(String("log2"),   Token::Type::LOG2);
-  builtins.insert(String("size"),   Token::Type::SIZE);
-  builtins.insert(String("true"),   Token::Type::TRUE);
+  builtins.insert(Pair<String, Token::Type>("false",  Token::Type::FALSE));
+  builtins.insert(Pair<String, Token::Type>("inside", Token::Type::INSIDE));
+  builtins.insert(Pair<String, Token::Type>("log2",   Token::Type::LOG2));
+  builtins.insert(Pair<String, Token::Type>("clog2",  Token::Type::CLOG2));
+  builtins.insert(Pair<String, Token::Type>("max",    Token::Type::MAX));
+  builtins.insert(Pair<String, Token::Type>("min",    Token::Type::MIN));
+  builtins.insert(Pair<String, Token::Type>("size",   Token::Type::SIZE));
+  builtins.insert(Pair<String, Token::Type>("true",   Token::Type::TRUE));
 
-  curr_char = char_stream;
+  curr_char = input_stream;
   curr_line = 1;
   curr_column = 1;
 
@@ -140,9 +141,9 @@ Token Lexer::preprocessor()
     case '\"':
       mode = Lexer::Mode::QUOTATION;
       return emit(Token::Type::DOUBLE_QUOTE);
-
+    
     case '$':
-      return emit(Token::Type::DOLLAR_SIGN);
+      return emit(Token::Type::DOLLAR);
 
     case '%':
       return emit(Token::Type::PERCENT);
@@ -256,14 +257,14 @@ Token Lexer::preprocessor()
         advance();
       }
       String string(start_char, length);
-      Token::Type* type = keywords.find(string);
-      if (type != nullptr) {
+      Map<String, Token::Type>::iterator type = keywords.find(string);
+      if (type != keywords.end()) {
         is_inline = false;
-        return emit(*type);
+        return emit(type->second);
       }
       type = builtins.find(string);
-      if (type != nullptr) {
-        return emit(*type);
+      if (type != builtins.end()) {
+        return emit(type->second);
       }
       if (nesting_level == 0 && is_inline && *curr_char != '(') {
         mode = Lexer::Mode::VERILOG;
@@ -315,7 +316,9 @@ Token Lexer::preprocessor()
       return emit(Token::Type::TILDE);
 
     default:
-      return emit(Token::Type::INVALID);
+      Token token = emit(Token::Type::INVALID);
+      String message = "unexpected character";
+      throw Lexical_error(token, message);
     }
   }
 }

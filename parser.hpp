@@ -1,4 +1,4 @@
-// Copyright (C) 2020, Hugo Decharnes, Bryan Aggoun. All rights reserved.
+// Copyright (C) 2020-2021, Hugo Decharnes. All rights reserved.
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -18,43 +18,47 @@
 #define PARSER_HPP
 
 #include <iostream>
-#include <utility>
+
+class Parser;
+
+#include "context.hpp"
 #include "exception.hpp"
-#include "list.hpp"
+#include "filesystem.hpp"
 #include "lexer.hpp"
+#include "list.hpp"
 #include "string.hpp"
 #include "token.hpp"
 #include "tree.hpp"
+#include "utility.hpp"
 
 class Parser {
 public:
-  Parser(const String& file_name, Lexer& lexer);
+  Parser(Path& file_path, Lexer& lexer);
   ~Parser();
 
 private:
-  const String& file_name;
+  Path& file_path;
   Lexer& lexer;
+
   Token curr_token;
-  unsigned int error_count;
+  uint error_count;
 
 public:
   Statement* parse();
 
 private:
   Statement* compound();
-  Statement* block();
-  Statement* definition();
-  Statement* func_return();
-  Statement* inclusion();
-  Statement* mutate();
-  Statement* expr_stmt();
   Statement* plain_text();
+  Statement* expr_stmt();
+  Statement* assertion();
+  Statement* local_var_def();
+  Statement* global_var_def();
+  Statement* macro_def();
+  Statement* printing();
   Statement* selection();
   Statement* iteration();
+  Statement* inclusion();
 
-  Function* function_def();
-
-  Expression* variable_def();
   Expression* ternary();
   Expression* logical_or();
   Expression* logical_and();
@@ -72,6 +76,9 @@ private:
   Expression* dictionary();
 
   Expression* log2_bif();
+  Expression* clog2_bif();
+  Expression* max_bif();
+  Expression* min_bif();
   Expression* size_bif();
 
   Expression* rhs_prefix();
@@ -84,7 +91,7 @@ private:
 
   Storage* lhs_storage();
 
-  List<Expression*>* function_call();
+  List<Expression*>* macro_call();
   Expression* subscript();
 
   Token advance();
@@ -92,7 +99,7 @@ private:
   bool match(Token::Type type);
 
   void synchronize();
-  void report(const Syntactic_error& error);
+  void report(const Preproc_error& error);
 };
 
 #endif // PARSER_HPP

@@ -1,4 +1,4 @@
-// Copyright (C) 2020, Hugo Decharnes, Bryan Aggoun. All rights reserved.
+// Copyright (C) 2020-2021, Hugo Decharnes. All rights reserved.
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -17,13 +17,16 @@
 #ifndef VARIANT_HPP
 #define VARIANT_HPP
 
+class Variant;
+class Macro;
+
 #include "exception.hpp"
-#include "list.hpp"
 #include "map.hpp"
+#include "memory.hpp"
 #include "string.hpp"
 #include "token.hpp"
-
-class Function;
+#include "utility.hpp"
+#include "vector.hpp"
 
 class Variant {
 private:
@@ -34,16 +37,16 @@ private:
     STRING,
     ARRAY,
     DICTIONARY,
-    FUNCTION
+    MACRO
   };
 
   union Data {
     int INTEGER;
     bool BOOLEAN;
-    String* STRING;
-    List<Variant>* ARRAY;
-    Map<Variant>* DICTIONARY;
-    Function* FUNCTION;
+    Shared_ptr<String> STRING;
+    Shared_ptr<Vector<Variant>> ARRAY;
+    Shared_ptr<Map<String, Variant>> DICTIONARY;
+    Macro* MACRO;
 
     Data();
     ~Data();
@@ -57,34 +60,34 @@ private:
 public:
   Variant();
   Variant(int rhs);
-  Variant(unsigned int rhs);
+  Variant(uint rhs);
   Variant(bool rhs);
   Variant(const String& rhs);
-  Variant(const List<Variant>& rhs);
-  Variant(const Map<Variant>& rhs);
-  Variant(Function* rhs);
+  Variant(const Vector<Variant>& rhs);
+  Variant(const Map<String, Variant>& rhs);
+  Variant(Macro* rhs);
   Variant(const Variant& rhs);
   ~Variant();
 
   Variant& operator=(int rhs);
-  Variant& operator=(unsigned int rhs);
+  Variant& operator=(uint rhs);
   Variant& operator=(bool rhs);
   Variant& operator=(const String& rhs);
-  Variant& operator=(const List<Variant>& rhs);
-  Variant& operator=(const Map<Variant>& rhs);
-  Variant& operator=(Function* rhs);
+  Variant& operator=(const Vector<Variant>& rhs);
+  Variant& operator=(const Map<String, Variant>& rhs);
+  Variant& operator=(Macro* rhs);
   Variant& operator=(const Variant& rhs);
 
   Variant& operator+=(int rhs);
-  Variant& operator+=(unsigned int rhs);
+  Variant& operator+=(uint rhs);
   Variant& operator+=(bool rhs);
   Variant& operator+=(const String& rhs);
-  Variant& operator+=(const List<Variant>& rhs);
-  Variant& operator+=(const Map<Variant>& rhs);
+  Variant& operator+=(const Vector<Variant>& rhs);
+  Variant& operator+=(const Map<String, Variant>& rhs);
   Variant& operator+=(const Variant& rhs);
 
   Variant& operator[](int rhs) const;
-  Variant& operator[](unsigned int rhs) const;
+  Variant& operator[](uint rhs) const;
   Variant& operator[](const String& rhs) const;
   Variant& operator[](const Variant& rhs) const;
 
@@ -113,23 +116,23 @@ public:
 
   Variant pow(const Variant& lhs);
   Variant log2();
+  Variant clog2();
 
   int get_int() const;
   bool get_bool() const;
-  const String& get_string() const;
-  const Function& get_function() const;
-  const List<Variant>& get_array() const;
-  const Map<Variant>& get_dictionary() const;
+  String& get_string() const;
+  Vector<Variant>& get_array() const;
+  Map<String, Variant>& get_dictionary() const;
+  Macro* get_macro() const;
 
   String to_string() const;
 };
 
-/////////////////////////////////////////////////////// EXCEPTION CLASSES ////////////////////////////////////////////////////////
-
-class Bad_variant : public std::exception {
+class Bad_variant_access : public Exception {
 public:
-  explicit Bad_variant(const String& message);
-  String message;
+  Bad_variant_access(const String& message);
+  ~Bad_variant_access();
+  const String message;
 };
 
 #endif // VARIANT_HPP

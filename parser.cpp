@@ -1,4 +1,4 @@
-// Copyright (C) 2020, Hugo Decharnes, Bryan Aggoun. All rights reserved.
+// Copyright (C) 2020-2021, Hugo Decharnes. All rights reserved.
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -18,8 +18,8 @@
 
 ///////////////////////////////////////////////////////////// PUBLICS //////////////////////////////////////////////////////////////
 
-Parser::Parser(const String& file_name, Lexer& lexer)
-  : file_name(file_name), lexer(lexer)
+Parser::Parser(Path& file_path, Lexer& lexer)
+  : file_path(file_path), lexer(lexer), error_count(0)
 {
 }
 
@@ -30,12 +30,11 @@ Parser::~Parser()
 Statement* Parser::parse()
 {
   curr_token = lexer.get_token();
-  error_count = 0;
   Statement* statement = compound();
   try {
     consume(Token::Type::END_OF_FILE);
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     report(error);
   }
   if (error_count == 0) {
@@ -43,7 +42,11 @@ Statement* Parser::parse()
   }
   else {
     delete statement;
-    String message = file_name + ": compilation failed due to " + to_string(error_count) + " error(s)";
+    if (error_count >= 5) {
+      String message = file_path.string() + ": " + std::to_string(error_count - 5) + " more error(s)\n";
+      std::cerr << message.data();
+    }
+    String message = file_path.string() + ": compilation failed due to " + std::to_string(error_count) + " error(s)";
     throw Runtime_error(message);
   }
 }
@@ -59,8 +62,13 @@ Statement* Parser::compound()
       case Token::Type::NEWLINE:
         advance();
         continue;
-      case Token::Type::BLOCK: {
-        Statement* statement = block();
+      case Token::Type::ASSERT: {
+        Statement* statement = assertion();
+        stmt_list->push_back(statement);
+        continue;
+      }
+      case Token::Type::DEFINE: {
+        Statement* statement = global_var_def();
         stmt_list->push_back(statement);
         continue;
       }
@@ -79,29 +87,27 @@ Statement* Parser::compound()
         stmt_list->push_back(statement);
         continue;
       }
-      case Token::Type::MUT: {
-        Statement* statement = mutate();
+      case Token::Type::LET: {
+        Statement* statement = local_var_def();
         stmt_list->push_back(statement);
         continue;
       }
-      case Token::Type::RETURN: {
-        Statement* statement = func_return();
+      case Token::Type::MACRO: {
+        Statement* statement = macro_def();
         stmt_list->push_back(statement);
         continue;
       }
-      case Token::Type::GLOBAL:
-      case Token::Type::LOCAL: {
-        Statement* statement = definition();
+      case Token::Type::PRINT: {
+        Statement* statement = printing();
         stmt_list->push_back(statement);
         continue;
       }
       case Token::Type::ELSE:
       case Token::Type::ELSEIF:
-      case Token::Type::END:
-      case Token::Type::ENDBLOCK:
-      case Token::Type::ENDIF:
       case Token::Type::ENDFOR:
-        if (stmt_list->get_size() == 1) {
+      case Token::Type::ENDIF:
+      case Token::Type::ENDMACRO:
+        if (stmt_list->size() == 1) {
           Statement* statement = stmt_list->front();
           delete stmt_list;
           return statement;
@@ -122,7 +128,7 @@ Statement* Parser::compound()
         continue;
       }
       else {
-        if (stmt_list->get_size() == 1) {
+        if (stmt_list->size() == 1) {
           Statement* statement = stmt_list->front();
           delete stmt_list;
           return statement;
@@ -135,171 +141,10 @@ Statement* Parser::compound()
   }
 }
 
-Statement* Parser::block()
+Statement* Parser::plain_text()
 {
   Token token = advance();
-  try {
-    consume(Token::Type::NEWLINE);
-  }
-  catch (const Syntactic_error& error) {
-    report(error);
-    synchronize();
-  }
-  Statement* statement = compound();
-  try {
-    consume(Token::Type::ENDBLOCK);
-    consume(Token::Type::NEWLINE);
-  }
-  catch (const Syntactic_error& error) {
-    report(error);
-    synchronize();
-  }
-  return new Block(token, statement);
-}
-
-Statement* Parser::definition()
-{
-  Token token = advance();
-  Storage* storage = nullptr;
-  try {
-    storage = lhs_storage();
-    if (match(Token::Type::LEFT_PAREN)) {
-      Function* function = function_def();
-      return new Function_def(token, storage, function);
-    }
-    else {
-      Expression* expression = variable_def();
-      return new Variable_def(token, storage, expression);
-    }
-  }
-  catch (const Syntactic_error& error) {
-    delete storage;
-    report(error);
-    synchronize();
-    return nullptr;
-  }
-}
-
-Expression* Parser::variable_def()
-{
-  Expression* expression = nullptr;
-  try {
-    consume(Token::Type::EQUAL);
-    expression = ternary();
-    consume(Token::Type::NEWLINE);
-    return expression;
-  }
-  catch (const Syntactic_error& error) {
-    delete expression;
-    throw error;
-  }
-}
-
-Function* Parser::function_def()
-{
-  List<Identifier*>* parameters = new List<Identifier*>();
-  Statement* statement = nullptr;
-  try {
-    if (!match(Token::Type::RIGHT_PAREN)) {
-      do {
-        Token token = consume(Token::Type::IDENTIFIER);
-        Identifier* parameter = new Identifier(token);
-        parameters->push_back(parameter);
-      } while (match(Token::Type::COMMA));
-      consume(Token::Type::RIGHT_PAREN);
-    }
-    switch (curr_token.type) {
-    case Token::Type::EQUAL: {
-      Token token = advance();
-      Expression* expression = ternary();
-      statement = new Func_return(token, expression);
-      consume(Token::Type::NEWLINE);
-      break;
-    }
-    case Token::Type::BEGIN: {
-      advance();
-      consume(Token::Type::NEWLINE);
-      statement = compound();
-      consume(Token::Type::END);
-      consume(Token::Type::NEWLINE);
-      break;
-    }
-    default:
-      String message = "expecting '=' or 'begin'; found " + to_string(curr_token.type);
-      throw Syntactic_error(curr_token, message);
-    }
-    return new Function(file_name, parameters, statement);
-  }
-  catch (const Syntactic_error& error) {
-    delete parameters;
-    delete statement;
-    throw error;
-  }
-}
-
-Statement* Parser::func_return()
-{
-  Token token = advance();
-  Expression* expression = nullptr;
-  try {
-    expression = ternary();
-    consume(Token::Type::NEWLINE);
-  }
-  catch (const Syntactic_error& error) {
-    report(error);
-    synchronize();
-  }
-  return new Func_return(token, expression);
-}
-
-Statement* Parser::inclusion()
-{
-  Token token = advance();
-  Expression* expression = nullptr;
-  try {
-    expression = ternary();
-    consume(Token::Type::NEWLINE);
-  }
-  catch (const Syntactic_error& error) {
-    report(error);
-    synchronize();
-  }
-  return new Inclusion(token, expression);
-}
-
-Statement* Parser::mutate()
-{
-  Token token = advance();
-  Location* location = nullptr;
-  Expression* expression = nullptr;
-  bool is_accumul = false;
-  try {
-    location = lhs_prefix();
-    switch (curr_token.type) {
-    case Token::Type::PLUS_EQUAL:
-      advance();
-      is_accumul = true;
-      break;
-    case Token::Type::EQUAL:
-      advance();
-      break;
-    default:
-      String message = "expecting '=' or '+='; found " + to_string(curr_token.type);
-      throw Syntactic_error(curr_token, message);
-    }
-    expression = ternary();
-    consume(Token::Type::NEWLINE);
-  }
-  catch (const Syntactic_error& error) {
-    report(error);
-    synchronize();
-  }
-  if (is_accumul) {
-    return new Accumulation(token, location, expression);
-  }
-  else {
-    return new Mutate(token, location, expression);
-  }
+  return new Plain_text(token);
 }
 
 Statement* Parser::expr_stmt()
@@ -309,24 +154,125 @@ Statement* Parser::expr_stmt()
   try {
     expression = ternary();
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     report(error);
     synchronize();
   }
   return new Expr_stmt(token, expression);
 }
 
-Statement* Parser::plain_text()
+Statement* Parser::local_var_def()
 {
   Token token = advance();
-  return new Plain_text(token);
+  Storage* storage = nullptr;
+  Expression* expression = nullptr;
+  try {
+    storage = lhs_storage();
+    consume(Token::Type::EQUAL);
+    expression = ternary();
+    consume(Token::Type::NEWLINE);
+  }
+  catch (const Preproc_error& error) {
+    report(error);
+    synchronize();
+  }
+  return new Local_var_def(token, storage, expression);
+}
+
+Statement* Parser::assertion()
+{
+  Token token = advance();
+  Expression* expression = nullptr;
+  try {
+    consume(Token::Type::LEFT_PAREN);
+    expression = ternary();
+    consume(Token::Type::RIGHT_PAREN);
+    consume(Token::Type::NEWLINE);
+  }
+  catch (const Preproc_error& error) {
+    report(error);
+    synchronize();
+  }
+  Assertion* assertion = new Assertion(token, expression);
+  return assertion;
+}
+
+Statement* Parser::global_var_def()
+{
+  Token token = advance();
+  Storage* storage = nullptr;
+  Expression* expression = nullptr;
+  try {
+    storage = lhs_storage();
+    consume(Token::Type::EQUAL);
+    expression = ternary();
+    consume(Token::Type::NEWLINE);
+  }
+  catch (const Preproc_error& error) {
+    report(error);
+    synchronize();
+  }
+  return new Global_var_def(token, storage, expression);
+}
+
+Statement* Parser::macro_def()
+{
+  Token token = advance();
+  Storage* storage = nullptr;
+  Statement* statement = nullptr;
+  List<Identifier*>* parameters = new List<Identifier*>();
+  try {
+    storage = lhs_storage();
+    consume(Token::Type::LEFT_PAREN);
+    if (!match(Token::Type::RIGHT_PAREN)) {
+      do {
+        Token token = consume(Token::Type::IDENTIFIER);
+        Identifier* parameter = new Identifier(token);
+        parameters->push_back(parameter);
+      } while (match(Token::Type::COMMA));
+      consume(Token::Type::RIGHT_PAREN);
+    }
+    consume(Token::Type::NEWLINE);
+  }
+  catch (const Preproc_error& error) {
+    report(error);
+    synchronize();
+  }
+  statement = compound();
+  try {
+    consume(Token::Type::ENDMACRO);
+    consume(Token::Type::NEWLINE);
+  }
+  catch (const Preproc_error& error) {
+    report(error);
+    synchronize();
+  }
+  Macro* macro = new Macro(file_path, parameters, statement);
+  return new Macro_def(token, storage, macro);
+}
+
+Statement* Parser::printing()
+{
+  Token token = advance();
+  Expression* expression = nullptr;
+  try {
+    consume(Token::Type::LEFT_PAREN);
+    expression = ternary();
+    consume(Token::Type::RIGHT_PAREN);
+    consume(Token::Type::NEWLINE);
+  }
+  catch (const Preproc_error& error) {
+    report(error);
+    synchronize();
+  }
+  Printing* printing = new Printing(token, expression);
+  return printing;
 }
 
 Statement* Parser::selection()
 {
   Token token = advance();
-  List<std::pair<Expression*, Statement*>>* alternatives
-    = new List<std::pair<Expression*, Statement*>>();
+  List<Pair<Expression*, Statement*>>* alternatives = new List<Pair<Expression*, Statement*>>();
   {
     Expression* expression = nullptr;
     try {
@@ -335,12 +281,12 @@ Statement* Parser::selection()
       consume(Token::Type::RIGHT_PAREN);
       consume(Token::Type::NEWLINE);
     }
-    catch (const Syntactic_error& error) {
+    catch (const Preproc_error& error) {
       report(error);
       synchronize();
     }
     Statement* statement = compound();
-    alternatives->push_back(std::pair<Expression*, Statement*>(expression, statement));
+    alternatives->push_back(Pair<Expression*, Statement*>(expression, statement));
   }
   while (curr_token.type == Token::Type::ELSEIF) {
     advance();
@@ -351,31 +297,31 @@ Statement* Parser::selection()
       consume(Token::Type::RIGHT_PAREN);
       consume(Token::Type::NEWLINE);
     }
-    catch (const Syntactic_error& error) {
+    catch (const Preproc_error& error) {
       report(error);
       synchronize();
     }
     Statement* statement = compound();
-    alternatives->push_back(std::pair<Expression*, Statement*>(expression, statement));
+    alternatives->push_back(Pair<Expression*, Statement*>(expression, statement));
   }
   if (curr_token.type == Token::Type::ELSE) {
     Token token = advance();
     try {
       consume(Token::Type::NEWLINE);
     }
-    catch (const Syntactic_error& error) {
+    catch (const Preproc_error& error) {
       report(error);
       synchronize();
     }
     Expression* expression = new True_const(token);
     Statement* statement = compound();
-    alternatives->push_back(std::pair<Expression*, Statement*>(expression, statement));
+    alternatives->push_back(Pair<Expression*, Statement*>(expression, statement));
   }
   try {
     consume(Token::Type::ENDIF);
     consume(Token::Type::NEWLINE);
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     report(error);
     synchronize();
   }
@@ -385,23 +331,17 @@ Statement* Parser::selection()
 Statement* Parser::iteration()
 {
   Token token = advance();
-  Storage* key_storage = nullptr;
-  Storage* val_storage = nullptr;
+  Storage* storage = nullptr;
   Expression* expression = nullptr;
   try {
     consume(Token::Type::LEFT_PAREN);
-    val_storage = lhs_storage();
-    if (match(Token::Type::COMMA)) {
-      key_storage = val_storage;
-      val_storage = nullptr;
-      val_storage = lhs_storage();
-    }
+    storage = lhs_storage();
     consume(Token::Type::COLON);
     expression = ternary();
     consume(Token::Type::RIGHT_PAREN);
     consume(Token::Type::NEWLINE);
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     report(error);
     synchronize();
   }
@@ -410,11 +350,26 @@ Statement* Parser::iteration()
     consume(Token::Type::ENDFOR);
     consume(Token::Type::NEWLINE);
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     report(error);
     synchronize();
   }
-  return new Iteration(token, key_storage, val_storage, expression, statement);
+  return new Iteration(token, storage, expression, statement);
+}
+
+Statement* Parser::inclusion()
+{
+  Token token = advance();
+  Expression* expression = nullptr;
+  try {
+    expression = ternary();
+    consume(Token::Type::NEWLINE);
+  }
+  catch (const Preproc_error& error) {
+    report(error);
+    synchronize();
+  }
+  return new Inclusion(token, expression);
 }
 
 /////////////////////////////////////////////////// RIGHT-HAND SIDE EXPRESSIONS ////////////////////////////////////////////////////
@@ -434,7 +389,7 @@ Expression* Parser::ternary()
     }
     return expression;
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     delete true_branch;
     throw error;
@@ -453,7 +408,7 @@ Expression* Parser::logical_or()
     }
     return expression;
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -471,7 +426,7 @@ Expression* Parser::logical_and()
     }
     return expression;
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -489,7 +444,7 @@ Expression* Parser::bitwise_or()
     }
     return expression;
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -507,7 +462,7 @@ Expression* Parser::bitwise_xor()
     }
     return expression;
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -525,7 +480,7 @@ Expression* Parser::bitwise_and()
     }
     return expression;
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -555,7 +510,7 @@ Expression* Parser::equality()
       }
     }
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -596,7 +551,7 @@ Expression* Parser::relational()
       return expression;
     }
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -626,7 +581,7 @@ Expression* Parser::shift()
       }
     }
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -656,7 +611,7 @@ Expression* Parser::additive()
       }
     }
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -692,7 +647,7 @@ Expression* Parser::multiplicative()
       }
     }
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -710,7 +665,7 @@ Expression* Parser::exponentiation()
     }
     return expression;
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -724,7 +679,7 @@ Expression* Parser::rhs_prefix()
     Expression* expression = rhs_prefix();
     return new Logical_not(token, expression);
   }
-  case Token::Type::DOLLAR_SIGN: {
+  case Token::Type::DOLLAR: {
     Token token = advance();
     Expression* expression = rhs_prefix();
     return new Interpolate(token, expression);
@@ -763,8 +718,8 @@ Expression* Parser::rhs_postfix()
       switch (curr_token.type) {
       case Token::Type::LEFT_PAREN: {
         Token token = advance();
-        List<Expression*>* expr_list = function_call();
-        expression = new Function_call(token, expression, expr_list);
+        List<Expression*>* expr_list = macro_call();
+        expression = new Macro_call(token, expression, expr_list);
         continue;
       }
       case Token::Type::LEFT_BRACK: {
@@ -778,18 +733,17 @@ Expression* Parser::rhs_postfix()
       }
     }
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
 }
 
-// This function parses the argument list after the opening parenthese, and returns that expression list enclosed in between.
-List<Expression*>* Parser::function_call()
+// This macro parses the argument list after the opening parenthese, and returns that expression list enclosed in between.
+List<Expression*>* Parser::macro_call()
 {
-  List<Expression*>* expr_list = nullptr;
+  List<Expression*>* expr_list = new List<Expression*>();
   try {
-    expr_list = new List<Expression*>();
     if (!match(Token::Type::RIGHT_PAREN)) {
       do {
         Expression* expression = ternary();
@@ -799,7 +753,10 @@ List<Expression*>* Parser::function_call()
     }
     return expr_list;
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
+    for (Expression*& expression : *expr_list) {
+      delete expression;
+    }
     delete expr_list;
     throw error;
   }
@@ -818,6 +775,12 @@ Expression* Parser::rhs_primary()
     return dictionary();
   case Token::Type::LOG2:
     return log2_bif();
+  case Token::Type::CLOG2:
+    return clog2_bif();
+  case Token::Type::MAX:
+    return max_bif();
+  case Token::Type::MIN:
+    return min_bif();
   case Token::Type::SIZE:
     return size_bif();
   case Token::Type::INTEGER: {
@@ -851,7 +814,7 @@ Expression* Parser::rhs_grouping()
     consume(Token::Type::RIGHT_PAREN);
     return expression;
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -886,7 +849,10 @@ Expression* Parser::quotation()
       }
     }
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
+    for (Expression*& expression : *expr_list) {
+      delete expression;
+    }
     delete expr_list;
     throw error;
   }
@@ -894,7 +860,7 @@ Expression* Parser::quotation()
 
 Expression* Parser::array()
 {
-  List<std::pair<Expression*, Expression*>>* expr_list = new List<std::pair<Expression*, Expression*>>();
+  List<Pair<Expression*, Expression*>>* expr_list = new List<Pair<Expression*, Expression*>>();
   Expression* left_expr = nullptr;
   Expression* right_expr = nullptr;
   try {
@@ -905,7 +871,7 @@ Expression* Parser::array()
         if (match(Token::Type::DOT_DOT)) {
           right_expr = ternary();
         }
-        expr_list->push_back(std::pair<Expression*, Expression*>(left_expr, right_expr));
+        expr_list->push_back(Pair<Expression*, Expression*>(left_expr, right_expr));
         left_expr = nullptr;
         right_expr = nullptr;
       } while (match(Token::Type::COMMA));
@@ -913,9 +879,13 @@ Expression* Parser::array()
     consume(Token::Type::RIGHT_BRACK);
     return new Array(token, expr_list);
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete left_expr;
     delete right_expr;
+    for (Pair<Expression*, Expression*>& pair : *expr_list) {
+      delete pair.first;
+      delete pair.second;
+    }
     delete expr_list;
     throw error;
   }
@@ -923,7 +893,7 @@ Expression* Parser::array()
 
 Expression* Parser::dictionary()
 {
-  List<std::pair<Expression*, Expression*>>* expr_list = new List<std::pair<Expression*, Expression*>>();
+  List<Pair<Expression*, Expression*>>* expr_list = new List<Pair<Expression*, Expression*>>();
   Expression* left_expr = nullptr;
   Expression* right_expr = nullptr;
   try {
@@ -933,7 +903,7 @@ Expression* Parser::dictionary()
         left_expr = ternary();
         consume(Token::Type::COLON);
         right_expr = ternary();
-        expr_list->push_back(std::pair<Expression*, Expression*>(left_expr, right_expr));
+        expr_list->push_back(Pair<Expression*, Expression*>(left_expr, right_expr));
         left_expr = nullptr;
         right_expr = nullptr;
       } while (match(Token::Type::COMMA));
@@ -941,9 +911,13 @@ Expression* Parser::dictionary()
     consume(Token::Type::RIGHT_CURLY);
     return new Dictionary(token, expr_list);
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete left_expr;
     delete right_expr;
+    for (Pair<Expression*, Expression*>& pair : *expr_list) {
+      delete pair.first;
+      delete pair.second;
+    }
     delete expr_list;
     throw error;
   }
@@ -959,7 +933,75 @@ Expression* Parser::log2_bif()
     consume(Token::Type::RIGHT_PAREN);
     return new Log2_bif(token, expression);
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
+    delete expression;
+    throw error;
+  }
+}
+
+Expression* Parser::clog2_bif()
+{
+  Expression* expression = nullptr;
+  try {
+    Token token = advance();
+    consume(Token::Type::LEFT_PAREN);
+    expression = ternary();
+    consume(Token::Type::RIGHT_PAREN);
+    return new Clog2_bif(token, expression);
+  }
+  catch (const Preproc_error& error) {
+    delete expression;
+    throw error;
+  }
+}
+
+//////////////////////////////////////////////////////// BUILT-IN FUNCTIONS ////////////////////////////////////////////////////////
+
+Expression* Parser::max_bif()
+{
+  List<Expression*>* expr_list = new List<Expression*>();
+  Expression* expression = nullptr;
+  try {
+    Token token = advance();
+    consume(Token::Type::LEFT_PAREN);
+    do {
+      expression = ternary();
+      expr_list->push_back(expression);
+      expression = nullptr;
+    } while (match(Token::Type::COMMA));
+    consume(Token::Type::RIGHT_PAREN);
+    return new Max_bif(token, expr_list);
+  }
+  catch (const Preproc_error& error) {
+    for (Expression*& expression : *expr_list) {
+      delete expression;
+    }
+    delete expr_list;
+    delete expression;
+    throw error;
+  }
+}
+
+Expression* Parser::min_bif()
+{
+  List<Expression*>* expr_list = new List<Expression*>();
+  Expression* expression = nullptr;
+  try {
+    Token token = advance();
+    consume(Token::Type::LEFT_PAREN);
+    do {
+      expression = ternary();
+      expr_list->push_back(expression);
+      expression = nullptr;
+    } while (match(Token::Type::COMMA));
+    consume(Token::Type::RIGHT_PAREN);
+    return new Min_bif(token, expr_list);
+  }
+  catch (const Preproc_error& error) {
+    for (Expression*& expression : *expr_list) {
+      delete expression;
+    }
+    delete expr_list;
     delete expression;
     throw error;
   }
@@ -975,7 +1017,7 @@ Expression* Parser::size_bif()
     consume(Token::Type::RIGHT_PAREN);
     return new Size_bif(token, expression);
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -1008,7 +1050,7 @@ Location* Parser::lhs_postfix()
     }
     return location;
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete location;
     throw error;
   }
@@ -1022,7 +1064,7 @@ Expression* Parser::subscript()
     consume(Token::Type::RIGHT_BRACK);
     return expression;
   }
-  catch (const Syntactic_error& error) {
+  catch (const Preproc_error& error) {
     delete expression;
     throw error;
   }
@@ -1082,9 +1124,11 @@ void Parser::synchronize()
   advance();
 }
 
-void Parser::report(const Syntactic_error& error)
+void Parser::report(const Preproc_error& error)
 {
-  String message = file_name + error.message + "\n";
-  std::cerr << message.data();
+  if (error_count < 5) {
+    String message = file_path.string() + ":" + error.message + "\n";
+    std::cerr << message.data();
+  }
   error_count++;
 }

@@ -14,16 +14,11 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-#ifndef MAIN_HPP
-#define MAIN_HPP
+#ifndef THREAD_HPP
+#define THREAD_HPP
 
-#include <iostream>
+#include <thread>
 
-#include "context.hpp"
-#include "filesystem.hpp"
-#include "string.hpp"
-#include "thread.hpp"
-#include "utility.hpp"
-#include "vector.hpp"
+using Thread = std::thread;
 
-#endif // MAIN_HPP
+#endif // THREAD_HPP

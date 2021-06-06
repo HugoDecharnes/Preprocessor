@@ -1,4 +1,4 @@
-// Copyright (C) 2020, Hugo Decharnes, Bryan Aggoun. All rights reserved.
+// Copyright (C) 2020-2021, Hugo Decharnes. All rights reserved.
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -17,27 +17,29 @@
 #ifndef CONTEXT_HPP
 #define CONTEXT_HPP
 
-#include <fstream>
-#include <thread>
-
 class Context;
 
 #include "environment.hpp"
+#include "filesystem.hpp"
+#include "fstream.hpp"
 #include "lexer.hpp"
-#include "map.hpp"
 #include "parser.hpp"
+#include "thread.hpp"
 #include "tree.hpp"
+#include "utility.hpp"
+#include "vector.hpp"
 #include "visitor.hpp"
 
 class Context {
 public:
-  Context();
+  Context(Path& file_path);
   ~Context();
-  char* char_stream;
+  Path file_path;
+  char* input_stream;
   Statement* parse_tree;
 };
 
-void compile(unsigned int argc, unsigned int thread_count, unsigned int thread_id, Map<Context>& context_list);
-void generate(unsigned int argc, unsigned int thread_count, unsigned int thread_id, Map<Context>& context_list);
+void compile(uint argc, uint thread_count, uint thread_id, Vector<Context>& context_list);
+void generate(uint argc, uint thread_count, uint thread_id, Vector<Context>& context_list);
 
 #endif // CONTEXT_HPP

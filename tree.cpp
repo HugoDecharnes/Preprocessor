@@ -1,4 +1,4 @@
-// Copyright (C) 2020, Hugo Decharnes, Bryan Aggoun. All rights reserved.
+// Copyright (C) 2020-2021, Hugo Decharnes. All rights reserved.
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -58,8 +58,8 @@ Storage::Storage(const Token& token)
 {
 }
 
-Function::Function(const String& file_name, List<Identifier*>* parameters, Statement* statement)
-  : file_name(file_name), parameters(parameters), statement(statement)
+Macro::Macro(const Path& file_path, List<Identifier*>* parameters, Statement* statement)
+  : file_path(file_path), parameters(parameters), statement(statement)
 {
 }
 
@@ -75,8 +75,8 @@ Plain_text::Plain_text(const Token& token)
 {
 }
 
-Block::Block(const Token& token, Statement* statement)
-  : Directive(token), statement(statement)
+Assertion::Assertion(const Token& token, Expression* expression)
+  : Directive(token), expression(expression)
 {
 }
 
@@ -85,38 +85,33 @@ Expr_stmt::Expr_stmt(const Token& token, Expression* expression)
 {
 }
 
-Variable_def::Variable_def(const Token& token, Storage* storage, Expression* expression)
+Local_var_def::Local_var_def(const Token& token, Storage* storage, Expression* expression)
   : Directive(token), storage(storage), expression(expression)
 {
 }
 
-Function_def::Function_def(const Token& token, Storage* storage, Function* function)
-  : Directive(token), storage(storage), function(function)
+Global_var_def::Global_var_def(const Token& token, Storage* storage, Expression* expression)
+  : Directive(token), storage(storage), expression(expression)
 {
 }
 
-Func_return::Func_return(const Token& token, Expression* expression)
+Macro_def::Macro_def(const Token& token, Storage* storage, Macro* macro)
+  : Directive(token), storage(storage), macro(macro)
+{
+}
+
+Printing::Printing(const Token& token, Expression* expression)
   : Directive(token), expression(expression)
 {
 }
 
-Mutate::Mutate(const Token& token, Location* location, Expression* expression)
-  : Directive(token), location(location), expression(expression)
-{
-}
-
-Accumulation::Accumulation(const Token& token, Location* location, Expression* expression)
-  : Directive(token), location(location), expression(expression)
-{
-}
-
-Selection::Selection(const Token& token, List<std::pair<Expression*, Statement*>>* alternatives)
+Selection::Selection(const Token& token, List<Pair<Expression*, Statement*>>* alternatives)
   : Directive(token), alternatives(alternatives)
 {
 }
 
-Iteration::Iteration(const Token& token, Storage* key_storage, Storage* val_storage, Expression* expression, Statement* statement)
-  : Directive(token), key_storage(key_storage), val_storage(val_storage), expression(expression), statement(statement)
+Iteration::Iteration(const Token& token, Storage* storage, Expression* expression, Statement* statement)
+  : Directive(token), storage(storage), expression(expression), statement(statement)
 {
 }
 
@@ -263,11 +258,25 @@ Log2_bif::Log2_bif(const Token& token, Expression* expression)
 {
 }
 
-Size_bif::Size_bif(const Token& token, Expression* expression)
+Clog2_bif::Clog2_bif(const Token& token, Expression* expression)
   : Unary_expr(token, expression)
 {
 }
 
+Max_bif::Max_bif(const Token& token, List<Expression*>* expr_list)
+  : Expression(token), expr_list(expr_list)
+{
+}
+
+Min_bif::Min_bif(const Token& token, List<Expression*>* expr_list)
+  : Expression(token), expr_list(expr_list)
+{
+}
+
+Size_bif::Size_bif(const Token& token, Expression* expression)
+  : Unary_expr(token, expression)
+{
+}
 
 Integer::Integer(const Token& token)
   : Primary_expr(token)
@@ -299,17 +308,17 @@ Quotation::Quotation(const Token& token, List<Expression*>* expr_list)
 {
 }
 
-Array::Array(const Token& token, List<std::pair<Expression*, Expression*>>* range_list)
+Array::Array(const Token& token, List<Pair<Expression*, Expression*>>* range_list)
   : Expression(token), range_list(range_list)
 {
 }
 
-Dictionary::Dictionary(const Token& token, List<std::pair<Expression*, Expression*>>* elements)
+Dictionary::Dictionary(const Token& token, List<Pair<Expression*, Expression*>>* elements)
   : Expression(token), elements(elements)
 {
 }
 
-Function_call::Function_call(const Token& token, Expression* left_expr, List<Expression*>* expr_list)
+Macro_call::Macro_call(const Token& token, Expression* left_expr, List<Expression*>* expr_list)
   : Expression(token), left_expr(left_expr), expr_list(expr_list)
 {
 }
@@ -366,7 +375,7 @@ Storage::~Storage()
 {
 }
 
-Function::~Function()
+Macro::~Macro()
 {
   for (Identifier* parameter : *parameters) {
     delete parameter;
@@ -389,9 +398,9 @@ Plain_text::~Plain_text()
 {
 }
 
-Block::~Block()
+Assertion::~Assertion()
 {
-  delete statement;
+  delete expression;
 }
 
 Expr_stmt::~Expr_stmt()
@@ -399,38 +408,32 @@ Expr_stmt::~Expr_stmt()
   delete expression;
 }
 
-Variable_def::~Variable_def()
+Local_var_def::~Local_var_def()
 {
   delete storage;
   delete expression;
 }
 
-Func_return::~Func_return()
-{
-  delete expression;
-}
-
-Function_def::~Function_def()
+Global_var_def::~Global_var_def()
 {
   delete storage;
-  delete function;
-}
-
-Mutate::~Mutate()
-{
-  delete location;
   delete expression;
 }
 
-Accumulation::~Accumulation()
+Macro_def::~Macro_def()
 {
-  delete location;
+  delete storage;
+  delete macro;
+}
+
+Printing::~Printing()
+{
   delete expression;
 }
 
 Selection::~Selection()
 {
-  for (std::pair<Expression*, Statement*>& alternative : *alternatives) {
+  for (Pair<Expression*, Statement*>& alternative : *alternatives) {
     delete alternative.first;
     delete alternative.second;
   }
@@ -439,8 +442,7 @@ Selection::~Selection()
 
 Iteration::~Iteration()
 {
-  delete key_storage;
-  delete val_storage;
+  delete storage;
   delete expression;
   delete statement;
 }
@@ -563,6 +565,24 @@ Log2_bif::~Log2_bif()
 {
 }
 
+Clog2_bif::~Clog2_bif()
+{
+}
+
+Max_bif::~Max_bif()
+{
+  for (Expression*& expression : *expr_list) {
+    delete expression;
+  }
+}
+
+Min_bif::~Min_bif()
+{
+  for (Expression*& expression : *expr_list) {
+    delete expression;
+  }
+}
+
 Size_bif::~Size_bif()
 {
 }
@@ -597,7 +617,7 @@ Quotation::~Quotation()
 
 Array::~Array()
 {
-  for (std::pair<Expression*, Expression*>& range : *range_list) {
+  for (Pair<Expression*, Expression*>& range : *range_list) {
     delete range.first;
     delete range.second;
   }
@@ -606,14 +626,14 @@ Array::~Array()
 
 Dictionary::~Dictionary()
 {
-  for (std::pair<Expression*, Expression*>& range : *elements) {
+  for (Pair<Expression*, Expression*>& range : *elements) {
     delete range.first;
     delete range.second;
   }
   delete elements;
 }
 
-Function_call::~Function_call()
+Macro_call::~Macro_call()
 {
   delete left_expr;
   for (Expression*& expression : *expr_list) {
@@ -649,9 +669,9 @@ void Plain_text::evaluate(Visitor* visitor)
   visitor->plain_text(this);
 }
 
-void Block::evaluate(Visitor* visitor)
+void Assertion::evaluate(Visitor* visitor)
 {
-  visitor->block(this);
+  visitor->assertion(this);
 }
 
 void Expr_stmt::evaluate(Visitor* visitor)
@@ -659,29 +679,24 @@ void Expr_stmt::evaluate(Visitor* visitor)
   visitor->expr_stmt(this);
 }
 
-void Variable_def::evaluate(Visitor* visitor)
+void Local_var_def::evaluate(Visitor* visitor)
 {
-  visitor->variable_def(this);
+  visitor->local_var_def(this);
 }
 
-void Function_def::evaluate(Visitor* visitor)
+void Global_var_def::evaluate(Visitor* visitor)
 {
-  visitor->function_def(this);
+  visitor->global_var_def(this);
 }
 
-void Func_return::evaluate(Visitor* visitor)
+void Macro_def::evaluate(Visitor* visitor)
 {
-  visitor->func_return(this);
+  visitor->macro_def(this);
 }
 
-void Mutate::evaluate(Visitor* visitor)
+void Printing::evaluate(Visitor* visitor)
 {
-  visitor->mutate(this);
-}
-
-void Accumulation::evaluate(Visitor* visitor)
-{
-  visitor->accumulation(this);
+  visitor->printing(this);
 }
 
 void Selection::evaluate(Visitor* visitor)
@@ -836,6 +851,21 @@ Variant Log2_bif::evaluate(Visitor* visitor)
   return visitor->log2_bif(this);
 }
 
+Variant Clog2_bif::evaluate(Visitor* visitor)
+{
+  return visitor->clog2_bif(this);
+}
+
+Variant Max_bif::evaluate(Visitor* visitor)
+{
+  return visitor->max_bif(this);
+}
+
+Variant Min_bif::evaluate(Visitor* visitor)
+{
+  return visitor->min_bif(this);
+}
+
 Variant Size_bif::evaluate(Visitor* visitor)
 {
   return visitor->size_bif(this);
@@ -881,9 +911,9 @@ Variant Dictionary::evaluate(Visitor* visitor)
   return visitor->dictionary(this);
 }
 
-Variant Function_call::evaluate(Visitor* visitor)
+Variant Macro_call::evaluate(Visitor* visitor)
 {
-  return visitor->function_call(this);
+  return visitor->macro_call(this);
 }
 
 Variant Identifier::evaluate(Visitor* visitor)

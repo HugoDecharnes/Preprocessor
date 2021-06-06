@@ -1,4 +1,4 @@
-// Copyright (C) 2020, Hugo Decharnes, Bryan Aggoun. All rights reserved.
+// Copyright (C) 2020-2021, Hugo Decharnes. All rights reserved.
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -17,7 +17,10 @@
 #ifndef TOKEN_HPP
 #define TOKEN_HPP
 
+#include <iostream>
+
 #include "string.hpp"
+#include "utility.hpp"
 
 class Token {
 public:
@@ -27,7 +30,7 @@ public:
     BANG,
     BANG_EQUAL,
     DOUBLE_QUOTE,
-    DOLLAR_SIGN,
+    DOLLAR,
     PERCENT,
     AMPERS,
     AMPERS_AMPERS,
@@ -56,24 +59,25 @@ public:
     AT_SIGN,
     PLAIN_TEXT,
     IDENTIFIER,
-    BEGIN,
-    BLOCK,
+    ASSERT,
+    DEFINE,
     ELSE,
     ELSEIF,
-    END,
-    ENDBLOCK,
     ENDFOR,
     ENDIF,
+    ENDMACRO,
     FALSE,
     FOR,
-    GLOBAL,
     IF,
     INCLUDE,
     INSIDE,
-    LOCAL,
+    LET,
     LOG2,
-    MUT,
-    RETURN,
+    CLOG2,
+    MACRO,
+    MAX,
+    MIN,
+    PRINT,
     SIZE,
     TRUE,
     LEFT_BRACK,
@@ -91,13 +95,13 @@ public:
 
   const Token::Type type;
   const char* start;
-  const unsigned int length;
-  const unsigned int line;
-  const unsigned int column;
+  const uint length;
+  const uint line;
+  const uint column;
 
   Token();
   Token(const Token&) = default;
-  Token(Token::Type type, const char* start, unsigned int length, unsigned int line, unsigned int column);
+  Token(Token::Type type, const char* start, uint length, uint line, uint column);
   Token& operator=(const Token&);
 
   String get_text() const;

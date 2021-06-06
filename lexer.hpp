@@ -1,4 +1,4 @@
-// Copyright (C) 2020, Hugo Decharnes, Bryan Aggoun. All rights reserved.
+// Copyright (C) 2020-2021, Hugo Decharnes. All rights reserved.
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -19,15 +19,20 @@
 
 #include <iostream>
 
+class Lexer;
+
+#include "context.hpp"
 #include "exception.hpp"
+#include "filesystem.hpp"
 #include "list.hpp"
 #include "map.hpp"
 #include "string.hpp"
 #include "token.hpp"
+#include "utility.hpp"
 
 class Lexer {
 public:
-  Lexer(const char* char_stream);
+  Lexer(const char* input_stream);
   ~Lexer();
 
   Token get_token();
@@ -40,20 +45,20 @@ private:
     VERILOG
   };
 
-  Map<Token::Type> keywords;
-  Map<Token::Type> builtins;
+  Map<String, Token::Type> keywords;
+  Map<String, Token::Type> builtins;
 
   const char* start_char;
   const char* curr_char;
-  unsigned int start_line;
-  unsigned int curr_line;
-  unsigned int start_column;
-  unsigned int curr_column;
-  unsigned int length;
+  uint start_line;
+  uint curr_line;
+  uint start_column;
+  uint curr_column;
+  uint length;
 
   Mode mode;
   bool is_inline;
-  unsigned int nesting_level;
+  uint nesting_level;
 
   Token preprocessor();
   Token quotation();

@@ -14,16 +14,12 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-#ifndef MAIN_HPP
-#define MAIN_HPP
+#ifndef VECTOR_HPP
+#define VECTOR_HPP
 
-#include <iostream>
+#include <vector>
 
-#include "context.hpp"
-#include "filesystem.hpp"
-#include "string.hpp"
-#include "thread.hpp"
-#include "utility.hpp"
-#include "vector.hpp"
+template<class T>
+using Vector = std::vector<T>;
 
-#endif // MAIN_HPP
+#endif // VECTOR_HPP

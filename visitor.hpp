@@ -1,4 +1,4 @@
-// Copyright (C) 2020, Hugo Decharnes, Bryan Aggoun. All rights reserved.
+// Copyright (C) 2020-2021, Hugo Decharnes. All rights reserved.
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -19,50 +19,43 @@
 
 class Visitor;
 
-#ifndef _CRT_SECURE_NO_WARNINGS
-#define _CRT_SECURE_NO_WARNINGS
-#endif
-
-#ifndef _CRT_NONSTDC_NO_DEPRECATE
-#define _CRT_NONSTDC_NO_DEPRECATE
-#endif
-
-#include <iostream>
-#include <utility>
+#include <climits>
 #include "context.hpp"
 #include "environment.hpp"
 #include "exception.hpp"
+#include "filesystem.hpp"
 #include "lexer.hpp"
 #include "parser.hpp"
 #include "string.hpp"
 #include "tree.hpp"
+#include "utility.hpp"
 #include "variant.hpp"
+#include "vector.hpp"
 
 class Visitor {
 public:
-  Visitor(const String& file_name, Statement* parse_tree, Environment& environment, Map<Context>& context_list);
+  Visitor(Path& file_path, Statement* parse_tree, Environment& environment, Vector<Context>& context_list);
   ~Visitor();
 
 private:
-  const String& file_name;
-  Statement* const parse_tree;
+  Path& file_path;
+  Statement* parse_tree;
   Environment& environment;
-  Map<Context>& context_list;
-  String out;
-  unsigned int error_count;
+  Vector<Context>& context_list;
+
+  String output_string;
 
 public:
   String visit();
 
+  void assertion(Assertion* node);
   void compound(Compound* node);
-  void block(Block* node);
   void plain_text(Plain_text* node);
   void expr_stmt(Expr_stmt* node);
-  void variable_def(Variable_def* node);
-  void function_def(Function_def* node);
-  void func_return(Func_return* node);
-  void mutate(Mutate* node);
-  void accumulation(Accumulation* node);
+  void local_var_def(Local_var_def* node);
+  void global_var_def(Global_var_def* node);
+  void macro_def(Macro_def* node);
+  void printing(Printing* node);
   void selection(Selection* node);
   void iteration(Iteration* node);
   void inclusion(Inclusion* node);
@@ -94,6 +87,9 @@ public:
   Variant logical_not(Logical_not* node);
   Variant interpolate(Interpolate* node);
   Variant log2_bif(Log2_bif* node);
+  Variant clog2_bif(Clog2_bif* node);
+  Variant max_bif(Max_bif* node);
+  Variant min_bif(Min_bif* node);
   Variant size_bif(Size_bif* node);
   Variant integer(Integer* node);
   Variant true_const(True_const* node);
@@ -103,7 +99,7 @@ public:
   Variant quotation(Quotation* node);
   Variant array(Array* node);
   Variant dictionary(Dictionary* node);
-  Variant function_call(Function_call* node);
+  Variant macro_call(Macro_call* node);
   Variant eval_subscript(Subscript* node);
   Variant eval_identifier(Identifier* node);
   Variant eval_indirection(Indirection* node);
@@ -119,14 +115,6 @@ public:
 
 private:
   void report(const Semantic_error& error);
-};
-
-/////////////////////////////////////////////////////// EXCEPTION CLASSES ////////////////////////////////////////////////////////
-
-class Return_exc : public std::exception {
-public:
-  explicit Return_exc(const Variant& result);
-  Variant result;
 };
 
 #endif // VISITOR_HPP

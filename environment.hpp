@@ -1,4 +1,4 @@
-// Copyright (C) 2020, Hugo Decharnes, Bryan Aggoun. All rights reserved.
+// Copyright (C) 2020-2021, Hugo Decharnes. All rights reserved.
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -17,16 +17,19 @@
 #ifndef ENVIRONMENT_HPP
 #define ENVIRONMENT_HPP
 
-#include <utility>
+class Environment;
+
 #include "exception.hpp"
+#include "filesystem.hpp"
 #include "list.hpp"
 #include "map.hpp"
 #include "string.hpp"
+#include "utility.hpp"
 #include "variant.hpp"
 
 class Environment {
 public:
-  Environment(const String& file_name);
+  Environment(const Path& file_name);
   ~Environment();
 
   void put_global(const String& key, const Variant& value);
@@ -35,20 +38,24 @@ public:
   Variant& get(const String& key);
 
   void push_block_scope();
-  void push_func_scope(const String& file_name, const Token& token);
-  void push_incl_scope(const String& file_name, const Token& token);
+  void push_func_scope(const Path& file_name, const Token& token);
+  void push_incl_scope(const Path& file_name, const Token& token);
   void pop_block_scope();
   void pop_func_scope();
   void pop_incl_scope();
 
-  void report(const Semantic_error& error) const;
+  void report(const Semantic_error& error);
+  uint get_error_count() const;
+  uint get_call_depth() const;
 
 private:
-  List<Map<Variant>> locals;
-  Map<Variant> globals;
+  List<Map<String, Variant>> locals;
+  Map<String, Variant> globals;
 
-  const String* curr_file;
-  List<std::pair<const String&, const Token&>> call_stack;
+  uint error_count;
+
+  Path curr_file;
+  List<Pair<const Path, const Token>> call_stack;
 };
 
 #endif // ENVIRONMENT_HPP

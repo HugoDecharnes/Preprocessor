@@ -14,16 +14,11 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-#ifndef MAIN_HPP
-#define MAIN_HPP
+#ifndef FILESYSTEM_HPP
+#define FILESYSTEM_HPP
 
-#include <iostream>
+#include <filesystem>
 
-#include "context.hpp"
-#include "filesystem.hpp"
-#include "string.hpp"
-#include "thread.hpp"
-#include "utility.hpp"
-#include "vector.hpp"
+using Path = std::filesystem::path;
 
-#endif // MAIN_HPP
+#endif // FILESYSTEM_HPP

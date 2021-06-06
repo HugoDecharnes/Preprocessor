@@ -1,4 +1,4 @@
-// Copyright (C) 2020, Hugo Decharnes, Bryan Aggoun. All rights reserved.
+// Copyright (C) 2020-2021, Hugo Decharnes. All rights reserved.
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -14,78 +14,12 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-#ifndef FWD_LIST_HPP
-#define FWD_LIST_HPP
+#ifndef LIST_HPP
+#define LIST_HPP
 
-#include <exception>
-#include <type_traits>
-#include <utility>
-#include "exception.hpp"
-#include "string.hpp"
+#include <list>
 
 template<class T>
-class List {
-private:
-  class Node {
-  public:
-    Node(const T& data);
-    ~Node();
+using List = std::list<T>;
 
-    T data;
-    List<T>::Node* next;
-  };
-
-  List<T>::Node* head;
-  List<T>::Node* tail;
-  unsigned int size;
-
-public:
-  class Iterator {
-  public:
-    Iterator();
-    Iterator(List<T>::Node* node);
-
-    T& operator*();
-    T& operator->();
-    
-    List<T>::Iterator& operator++();
-    List<T>::Iterator operator++(int);
-
-    bool operator==(const List<T>::Iterator& rhs) const;
-    bool operator!=(const List<T>::Iterator& rhs) const;
-
-    unsigned int get_index() const;
-
-  private:
-    unsigned int index;
-    List<T>::Node* node;
-  };
-
-  List();
-  List(const List<T>& rhs);
-  ~List();
-
-  List<T>& operator=(const List<T>& rhs);
-  List<T>& operator+=(const List<T>& rhs);
-  
-  List<T> operator+(const List<T>& rhs) const;
-
-  void push_front(const T& data);
-  void push_back(const T& data);
-  void pop_front();
-  void clear();
-
-  bool empty() const;
-
-  unsigned int get_size() const;
-
-  T& front() const;
-  T& back() const;
-  T& at(int rhs) const;
-  T& at(unsigned int rhs) const;
-
-  List<T>::Iterator begin() const;
-  List<T>::Iterator end() const;
-};
-
-#endif // FWD_LIST_HPP
+#endif // LIST_HPP

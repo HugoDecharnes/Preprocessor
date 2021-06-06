@@ -14,16 +14,14 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-#ifndef MAIN_HPP
-#define MAIN_HPP
+#ifndef UTILITY_HPP
+#define UTILITY_HPP
 
-#include <iostream>
+#include <utility>
 
-#include "context.hpp"
-#include "filesystem.hpp"
-#include "string.hpp"
-#include "thread.hpp"
-#include "utility.hpp"
-#include "vector.hpp"
+typedef unsigned int uint;
 
-#endif // MAIN_HPP
+template<typename T1, typename T2>
+using Pair = std::pair<T1, T2>;
+
+#endif // UTILITY_HPP

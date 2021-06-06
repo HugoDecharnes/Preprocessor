@@ -14,16 +14,12 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-#ifndef MAIN_HPP
-#define MAIN_HPP
+#ifndef MEMORY_HPP
+#define MEMORY_HPP
 
-#include <iostream>
+#include <memory>
 
-#include "context.hpp"
-#include "filesystem.hpp"
-#include "string.hpp"
-#include "thread.hpp"
-#include "utility.hpp"
-#include "vector.hpp"
+template<class T>
+using Shared_ptr = std::shared_ptr<T>;
 
-#endif // MAIN_HPP
+#endif // MEMORY_HPP

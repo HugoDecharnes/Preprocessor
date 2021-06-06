@@ -1,4 +1,4 @@
-// Copyright (C) 2020, Hugo Decharnes, Bryan Aggoun. All rights reserved.
+// Copyright (C) 2020-2021, Hugo Decharnes. All rights reserved.
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -17,13 +17,76 @@
 #ifndef TREE_HPP
 #define TREE_HPP
 
-#include <utility>
+class Statement;
+class Directive;
+class Expression;
+class Binary_expr;
+class Unary_expr;
+class Primary_expr;
+class Location;
+class Storage;
+class Ternary;
+class Logical_or;
+class Logical_and;
+class Bitwise_or;
+class Bitwise_xor;
+class Bitwise_and;
+class Equal;
+class Not_equal;
+class Strict_super;
+class Loose_super;
+class Strict_infer;
+class Loose_infer;
+class Inside;
+class Left_shift;
+class Right_shift;
+class Addition;
+class Subtraction;
+class Multiplication;
+class Division;
+class Modulo;
+class Exponentiation;
+class Unary_plus;
+class Unary_minus;
+class Bitwise_not;
+class Logical_not;
+class Interpolate;
+class Log2_bif;
+class Clog2_bif;
+class Max_bif;
+class Min_bif;
+class Size_bif;
+class Integer;
+class True_const;
+class False_const;
+class String_literal;
+class Escape_seq;
+class Quotation;
+class Array;
+class Dictionary;
+class Macro_call;
+class Subscript;
+class Identifier;
+class Indirection;
+class Compound;
+class Plain_text;
+class Assertion;
+class Expr_stmt;
+class Local_var_def;
+class Global_var_def;
+class Macro;
+class Macro_def;
+class Printing;
+class Selection;
+class Iteration;
+class Inclusion;
 
+#include "filesystem.hpp"
 #include "string.hpp"
 #include "token.hpp"
+#include "utility.hpp"
 #include "variant.hpp"
-
-class Visitor;
+#include "visitor.hpp"
 
 ////////////////////////////////////////////////////////// BASE CLASSES //////////////////////////////////////////////////////////
 
@@ -280,6 +343,29 @@ public:
   Variant evaluate(Visitor* visitor) override;
 };
 
+class Clog2_bif : public Unary_expr {
+public:
+  Clog2_bif(const Token& token, Expression* expression);
+  ~Clog2_bif();
+  Variant evaluate(Visitor* visitor) override;
+};
+
+class Max_bif : public Expression {
+public:
+  Max_bif(const Token& token, List<Expression*>* expr_list);
+  ~Max_bif();
+  List<Expression*>* expr_list;
+  Variant evaluate(Visitor* visitor) override;
+};
+
+class Min_bif : public Expression {
+public:
+  Min_bif(const Token& token, List<Expression*>* expr_list);
+  ~Min_bif();
+  List<Expression*>* expr_list;
+  Variant evaluate(Visitor* visitor) override;
+};
+
 class Size_bif : public Unary_expr {
 public:
   Size_bif(const Token& token, Expression* expression);
@@ -332,24 +418,24 @@ public:
 
 class Array : public Expression {
 public:
-  Array(const Token& token, List<std::pair<Expression*, Expression*>>* range_list);
+  Array(const Token& token, List<Pair<Expression*, Expression*>>* range_list);
   ~Array();
-  List<std::pair<Expression*, Expression*>>* range_list;
+  List<Pair<Expression*, Expression*>>* range_list;
   Variant evaluate(Visitor* visitor) override;
 };
 
 class Dictionary : public Expression {
 public:
-  Dictionary(const Token& token, List<std::pair<Expression*, Expression*>>* elements);
+  Dictionary(const Token& token, List<Pair<Expression*, Expression*>>* elements);
   ~Dictionary();
-  List<std::pair<Expression*, Expression*>>* elements;
+  List<Pair<Expression*, Expression*>>* elements;
   Variant evaluate(Visitor* visitor) override;
 };
 
-class Function_call : public Expression {
+class Macro_call : public Expression {
 public:
-  Function_call(const Token& token, Expression* left_expr, List<Expression*>* expr_list);
-  ~Function_call();
+  Macro_call(const Token& token, Expression* left_expr, List<Expression*>* expr_list);
+  ~Macro_call();
   Expression* const left_expr;
   List<Expression*>* const expr_list;
   Variant evaluate(Visitor* visitor) override;
@@ -404,11 +490,11 @@ public:
   void evaluate(Visitor* visitor) override;
 };
 
-class Block : public Directive {
+class Assertion : public Directive {
 public:
-  Block(const Token& token, Statement* statement);
-  ~Block();
-  Statement* const statement;
+  Assertion(const Token& token, Expression* expression);
+  ~Assertion();
+  Expression* const expression;
   void evaluate(Visitor* visitor) override;
 };
 
@@ -420,73 +506,63 @@ public:
   void evaluate(Visitor* visitor) override;
 };
 
-class Variable_def : public Directive {
+class Local_var_def : public Directive {
 public:
-  Variable_def(const Token& token, Storage* storage, Expression* expression);
-  ~Variable_def();
+  Local_var_def(const Token& token, Storage* storage, Expression* expression);
+  ~Local_var_def();
   Storage* const storage;
   Expression* const expression;
   void evaluate(Visitor* visitor) override;
 };
 
-class Function {
+class Global_var_def : public Directive {
 public:
-  Function(const String& file_name, List<Identifier*>* parameters, Statement* statement);
-  ~Function();
-  const String& file_name;
+  Global_var_def(const Token& token, Storage* storage, Expression* expression);
+  ~Global_var_def();
+  Storage* const storage;
+  Expression* const expression;
+  void evaluate(Visitor* visitor) override;
+};
+
+class Macro {
+public:
+  Macro(const Path& file_path, List<Identifier*>* parameters, Statement* statement);
+  ~Macro();
+  const Path file_path;
   List<Identifier*>* const parameters;
   Statement* const statement;
 };
 
-class Function_def : public Directive {
+class Macro_def : public Directive {
 public:
-  Function_def(const Token& token, Storage* storage, Function* function);
-  ~Function_def();
+  Macro_def(const Token& token, Storage* storage, Macro* macro);
+  ~Macro_def();
   Storage* const storage;
-  Function* const function;
+  Macro* const macro;
   void evaluate(Visitor* visitor) override;
 };
 
-class Func_return : public Directive {
+class Printing : public Directive {
 public:
-  Func_return(const Token& token, Expression* expression);
-  ~Func_return();
-  Expression* const expression;
-  void evaluate(Visitor* visitor) override;
-};
-
-class Mutate : public Directive {
-  public:
-  Mutate(const Token& token, Location* location, Expression* expression);
-  ~Mutate();
-  Location* const location;
-  Expression* const expression;
-  void evaluate(Visitor* visitor) override;
-};
-
-class Accumulation : public Directive {
-  public:
-  Accumulation(const Token& token, Location* location, Expression* expression);
-  ~Accumulation();
-  Location* const location;
+  Printing(const Token& token, Expression* expression);
+  ~Printing();
   Expression* const expression;
   void evaluate(Visitor* visitor) override;
 };
 
 class Selection : public Directive {
 public:
-  Selection(const Token& token, List<std::pair<Expression*, Statement*>>* alternatives);
+  Selection(const Token& token, List<Pair<Expression*, Statement*>>* alternatives);
   ~Selection();
-  List<std::pair<Expression*, Statement*>>* alternatives;
+  List<Pair<Expression*, Statement*>>* alternatives;
   void evaluate(Visitor* visitor) override;
 };
 
 class Iteration : public Directive {
 public:
-  Iteration(const Token& token, Storage* key_storage, Storage* val_storage, Expression* expression, Statement* statement);
+  Iteration(const Token& token, Storage* storage, Expression* expression, Statement* statement);
   ~Iteration();
-  Storage* const key_storage;
-  Storage* const val_storage;
+  Storage* const storage;
   Expression* const expression;
   Statement* const statement;
   void evaluate(Visitor* visitor) override;
